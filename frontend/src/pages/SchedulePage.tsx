@@ -5,7 +5,6 @@ import Navigation from '../components/Navigation';
 export default function SchedulePage() {
   const [activeTab, setActiveTab] = useState<'ai' | 'leti'>('ai');
   const [scheduleText, setScheduleText] = useState('');
-  const [studentId, setStudentId] = useState('');
   const [groupNumber, setGroupNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -33,8 +32,8 @@ export default function SchedulePage() {
   };
 
   const handleLETIImport = async () => {
-    if (!studentId.trim() || !groupNumber.trim()) {
-      setError('Заполните все поля');
+    if (!groupNumber.trim()) {
+      setError('Введите номер группы');
       return;
     }
 
@@ -42,10 +41,9 @@ export default function SchedulePage() {
       setLoading(true);
       setError('');
       setSuccess('');
-      
-      const result = await scheduleAPI.importFromLETI(studentId, groupNumber);
-      setSuccess(`Успешно импортировано ${result.activities_created || 0} занятий`);
-      setStudentId('');
+
+      const result = await scheduleAPI.importFromLETI(groupNumber);
+      setSuccess(`Успешно импортировано ${result.count || 0} занятий`);
       setGroupNumber('');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Не удалось импортировать расписание');
@@ -135,23 +133,10 @@ export default function SchedulePage() {
           <div className="card">
             <h2 className="text-2xl font-bold mb-4">Импорт из ЛЭТИ API</h2>
             <p className="text-sm text-[var(--text-secondary)] mb-6">
-              Автоматически загрузите расписание из системы ЛЭТИ по номеру студенческого билета и группы.
+              Автоматически загрузите расписание из системы ЛЭТИ по номеру группы.
             </p>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Номер студенческого билета
-                </label>
-                <input
-                  type="text"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  className="input w-full"
-                  placeholder="Например: 12345"
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Номер группы
@@ -161,7 +146,7 @@ export default function SchedulePage() {
                   value={groupNumber}
                   onChange={(e) => setGroupNumber(e.target.value)}
                   className="input w-full"
-                  placeholder="Например: 1234"
+                  placeholder="Например: 0304"
                 />
               </div>
 

@@ -353,10 +353,9 @@ export const scheduleAPI = {
     return response.data;
   },
 
-  importFromLETI: async (studentId: string, groupNumber: string) => {
-    const response = await api.post('/api/schedule/import-leti', {
-      student_id: studentId,
-      group_number: groupNumber,
+  importFromLETI: async (groupNumber: string) => {
+    const response = await api.post('/api/leti/import-schedule', null, {
+      params: { group_number: groupNumber },
     });
     return response.data;
   },
