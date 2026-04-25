@@ -29,8 +29,10 @@ export default function Navigation() {
     { name: 'Главная', path: '/dashboard' },
     { name: 'Карта', path: '/map' },
     { name: 'Чат', path: '/chat' },
+    { name: 'Расписание', path: '/schedule' },
     { name: 'Рейтинг', path: '/leaderboard' },
-    { name: 'Друзья', path: '/social' },
+    { name: 'Группы', path: '/groups' },
+    { name: 'Друзья', path: '/friends' },
     { name: 'Аналитика', path: '/analytics' },
     { name: 'Профиль', path: '/profile' }
   ];

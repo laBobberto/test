@@ -1,54 +1,50 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store';
 import Navigation from '../components/Navigation';
-import api from '../services/api';
-
-interface UserRank {
-  user_id: number;
-  username: string;
-  total_points: number;
-  rank: number;
-  weekly_points: number;
-  monthly_points: number;
-}
-
-interface LeaderboardData {
-  users: UserRank[];
-  my_rank: UserRank | null;
-  total_users: number;
-}
+import { leaderboardAPI, groupsAPI } from '../services/api';
+import type { LeaderboardEntry, Group } from '../types';
 
 export default function LeaderboardPage() {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<'all' | 'weekly' | 'monthly'>('all');
-  const [filter, setFilter] = useState<'global' | 'student' | 'resident' | 'tourist'>('global');
+  const [viewType, setViewType] = useState<'global' | 'friends' | 'group'>('global');
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
   const { user } = useAuthStore();
 
   useEffect(() => {
+    loadGroups();
+  }, []);
+
+  useEffect(() => {
     loadLeaderboard();
-  }, [period, filter]);
+  }, [viewType, selectedGroupId]);
+
+  const loadGroups = async () => {
+    try {
+      const data = await groupsAPI.getGroups();
+      setGroups(data.filter(g => g.is_member));
+    } catch (error) {
+      console.error('Error loading groups:', error);
+    }
+  };
 
   const loadLeaderboard = async () => {
     try {
       setLoading(true);
 
-      let endpoint = '/api/leaderboard/global';
-      const params: any = { limit: 100 };
-
-      if (filter !== 'global') {
-        endpoint = `/api/leaderboard/by-role/${filter}`;
-      } else if (period === 'weekly') {
-        endpoint = '/api/leaderboard/weekly';
-      } else if (period === 'monthly') {
-        endpoint = '/api/leaderboard/monthly';
-      } else {
-        params.period = 'all';
+      let data: LeaderboardEntry[] = [];
+      
+      if (viewType === 'global') {
+        data = await leaderboardAPI.getGlobal();
+      } else if (viewType === 'friends') {
+        data = await leaderboardAPI.getFriends();
+      } else if (viewType === 'group' && selectedGroupId) {
+        data = await leaderboardAPI.getGroup(selectedGroupId);
       }
 
-      const response = await api.get(endpoint, { params });
-      setLeaderboard(response.data);
+      setLeaderboard(data);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
     } finally {
@@ -88,99 +84,93 @@ export default function LeaderboardPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <h1 className="text-4xl font-bold syne gradient-text mb-8">Рейтинг</h1>
 
-        {/* Filters */}
+        {/* View Type Filters */}
         <div className="card mb-8">
           <div className="mb-6">
             <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>
-              Период:
+              Тип рейтинга:
             </p>
-            <div className="flex gap-2">
-              {[
-                { value: 'all' as const, label: 'Все время' },
-                { value: 'monthly' as const, label: 'Месяц' },
-                { value: 'weekly' as const, label: 'Неделя' }
-              ].map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setPeriod(value)}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 ${
-                    period === value
-                      ? 'bg-[var(--accent-primary)] text-white'
-                      : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setViewType('global')}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  viewType === 'global'
+                    ? 'bg-[var(--accent-primary)] text-white'
+                    : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]'
+                }`}
+              >
+                Глобальный
+              </button>
+              <button
+                onClick={() => setViewType('friends')}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  viewType === 'friends'
+                    ? 'bg-[var(--accent-primary)] text-white'
+                    : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]'
+                }`}
+              >
+                Среди друзей
+              </button>
+              <button
+                onClick={() => setViewType('group')}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  viewType === 'group'
+                    ? 'bg-[var(--accent-primary)] text-white'
+                    : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]'
+                }`}
+              >
+                В группе
+              </button>
             </div>
           </div>
 
-          <div>
-            <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>
-              Категория:
-            </p>
-            <div className="flex gap-2">
-              {[
-                { value: 'global' as const, label: 'Все' },
-                { value: 'student' as const, label: 'Студенты' },
-                { value: 'resident' as const, label: 'Жители' },
-                { value: 'tourist' as const, label: 'Туристы' }
-              ].map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setFilter(value)}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 ${
-                    filter === value
-                      ? 'bg-[var(--accent-primary)] text-white'
-                      : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+          {viewType === 'group' && (
+            <div>
+              <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>
+                Выберите группу:
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {groups.map((group) => (
+                  <button
+                    key={group.id}
+                    onClick={() => setSelectedGroupId(group.id)}
+                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                      selectedGroupId === group.id
+                        ? 'bg-[var(--accent-primary)] text-white'
+                        : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]'
+                    }`}
+                  >
+                    {group.name}
+                  </button>
+                ))}
+                {groups.length === 0 && (
+                  <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                    Вы не состоите ни в одной группе
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
-
-        {/* My Rank */}
-        {leaderboard?.my_rank && (
-          <div className="card mb-8 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className="text-3xl font-bold syne">
-                  {getRankIcon(leaderboard.my_rank.rank)}
-                </span>
-                <div>
-                  <p className="font-semibold">Ваша позиция</p>
-                  <p className="text-sm opacity-90">{leaderboard.my_rank.username}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-3xl font-bold syne">{leaderboard.my_rank.total_points}</p>
-                <p className="text-sm opacity-90">баллов</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Leaderboard */}
         <div className="space-y-3">
-          {leaderboard?.users.map((userRank, index) => (
+          {leaderboard.map((entry, index) => (
             <div
-              key={userRank.user_id}
+              key={entry.user_id}
               className={`card card-hover animate-fade-in ${
-                userRank.user_id === user?.id ? 'ring-2 ring-[var(--accent-primary)]' : ''
+                entry.user_id === user?.id ? 'ring-2 ring-[var(--accent-primary)]' : ''
               }`}
               style={{ animationDelay: `${index * 0.05}s` }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <span className={`text-2xl font-bold syne ${getRankColor(userRank.rank)}`}>
-                    {getRankIcon(userRank.rank)}
+                  <span className={`text-2xl font-bold syne ${getRankColor(entry.rank)}`}>
+                    {getRankIcon(entry.rank)}
                   </span>
                   <div>
-                    <p className="font-semibold">{userRank.username}</p>
-                    {userRank.user_id === user?.id && (
+                    <p className="font-semibold">{entry.username}</p>
+                    {entry.user_id === user?.id && (
                       <p className="text-xs" style={{ color: 'var(--accent-primary)' }}>
                         Это вы
                       </p>
@@ -189,9 +179,7 @@ export default function LeaderboardPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold syne gradient-text">
-                    {period === 'weekly' ? userRank.weekly_points :
-                     period === 'monthly' ? userRank.monthly_points :
-                     userRank.total_points}
+                    {entry.total_points}
                   </p>
                   <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                     баллов
@@ -202,7 +190,7 @@ export default function LeaderboardPage() {
           ))}
         </div>
 
-        {leaderboard?.users.length === 0 && (
+        {leaderboard.length === 0 && !loading && (
           <div className="card text-center py-16">
             <div className="text-5xl mb-4 opacity-30">🏆</div>
             <p style={{ color: 'var(--text-secondary)' }}>

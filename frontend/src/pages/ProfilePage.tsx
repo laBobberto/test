@@ -8,6 +8,11 @@ import type { Achievement } from '../types';
 export default function ProfilePage() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [homeAddress, setHomeAddress] = useState('');
+  const [travelTime, setTravelTime] = useState(30);
+  const [editingSettings, setEditingSettings] = useState(false);
+  const [settingsError, setSettingsError] = useState('');
+  const [settingsSuccess, setSettingsSuccess] = useState('');
 
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -16,7 +21,19 @@ export default function ProfilePage() {
 
   useEffect(() => {
     loadData();
+    loadUserSettings();
   }, []);
+
+  const loadUserSettings = async () => {
+    try {
+      const profile = await userAPI.getProfile();
+      // Предполагаем, что в профиле есть поля home_address и travel_time
+      setHomeAddress((profile as any).home_address || '');
+      setTravelTime((profile as any).travel_time || 30);
+    } catch (error) {
+      console.error('Error loading user settings:', error);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -34,6 +51,26 @@ export default function ProfilePage() {
       console.error('Error loading profile data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      setSettingsError('');
+      setSettingsSuccess('');
+      
+      // Отправляем обновленные настройки на сервер
+      await userAPI.updateProfile({
+        home_address: homeAddress,
+        travel_time: travelTime,
+      });
+      
+      setSettingsSuccess('Настройки успешно сохранены');
+      setEditingSettings(false);
+      
+      setTimeout(() => setSettingsSuccess(''), 3000);
+    } catch (error: any) {
+      setSettingsError(error.response?.data?.detail || 'Не удалось сохранить настройки');
     }
   };
 
@@ -136,6 +173,89 @@ export default function ProfilePage() {
           >
             Изменить приоритеты
           </button>
+        </div>
+
+        {/* Settings */}
+        <div className="card mb-8">
+          <h2 className="text-2xl font-bold syne gradient-text mb-6">Настройки</h2>
+          
+          {settingsError && (
+            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-4">
+              <p className="text-red-500 text-sm font-medium">{settingsError}</p>
+            </div>
+          )}
+
+          {settingsSuccess && (
+            <div className="bg-green-500/10 border border-green-500/50 rounded-xl p-4 mb-4">
+              <p className="text-green-500 text-sm font-medium">{settingsSuccess}</p>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Домашний адрес
+              </label>
+              <input
+                type="text"
+                value={homeAddress}
+                onChange={(e) => setHomeAddress(e.target.value)}
+                disabled={!editingSettings}
+                className="input w-full"
+                placeholder="Например: Санкт-Петербург, ул. Ленина, д. 1"
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Используется для расчета времени в пути до мероприятий
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Время на дорогу (минут)
+              </label>
+              <input
+                type="number"
+                value={travelTime}
+                onChange={(e) => setTravelTime(parseInt(e.target.value) || 0)}
+                disabled={!editingSettings}
+                className="input w-full"
+                min="0"
+                max="180"
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Среднее время, которое вы готовы потратить на дорогу до мероприятия
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            {editingSettings ? (
+              <>
+                <button
+                  onClick={handleSaveSettings}
+                  className="btn-primary flex-1"
+                >
+                  Сохранить
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingSettings(false);
+                    loadUserSettings();
+                  }}
+                  className="btn-secondary flex-1"
+                >
+                  Отмена
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setEditingSettings(true)}
+                className="btn-secondary w-full"
+              >
+                Редактировать настройки
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Achievements */}

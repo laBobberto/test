@@ -7,7 +7,11 @@ import type {
   Achievement, 
   UserStats, 
   DailyPlan,
-  AuthResponse 
+  AuthResponse,
+  Group,
+  GroupMember,
+  Friend,
+  LeaderboardEntry
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -58,6 +62,11 @@ export const authAPI = {
 export const userAPI = {
   getProfile: async () => {
     const response = await api.get<User>('/api/user/profile');
+    return response.data;
+  },
+
+  updateProfile: async (data: any) => {
+    const response = await api.put('/api/user/profile', data);
     return response.data;
   },
 
@@ -207,6 +216,128 @@ export const mapsAPI = {
   getTraffic: async (city: string = 'Saint Petersburg') => {
     const response = await api.get('/api/maps/traffic', {
       params: { city }
+    });
+    return response.data;
+  },
+};
+
+// Groups API
+export const groupsAPI = {
+  createGroup: async (name: string, description?: string) => {
+    const response = await api.post<Group>('/api/groups/', {
+      name,
+      description,
+    });
+    return response.data;
+  },
+
+  getGroups: async () => {
+    const response = await api.get<Group[]>('/api/groups/');
+    return response.data;
+  },
+
+  getGroup: async (id: number) => {
+    const response = await api.get<Group>(`/api/groups/${id}`);
+    return response.data;
+  },
+
+  joinGroup: async (id: number) => {
+    const response = await api.post(`/api/groups/${id}/join`);
+    return response.data;
+  },
+
+  leaveGroup: async (id: number) => {
+    await api.post(`/api/groups/${id}/leave`);
+  },
+
+  getMembers: async (id: number) => {
+    const response = await api.get<GroupMember[]>(`/api/groups/${id}/members`);
+    return response.data;
+  },
+
+  deleteGroup: async (id: number) => {
+    await api.delete(`/api/groups/${id}`);
+  },
+};
+
+// Friends API
+export const friendsAPI = {
+  sendRequest: async (friendId: number) => {
+    const response = await api.post<Friend>('/api/friends/request', {
+      friend_id: friendId,
+    });
+    return response.data;
+  },
+
+  getFriends: async () => {
+    const response = await api.get<Friend[]>('/api/friends/');
+    return response.data;
+  },
+
+  getPendingRequests: async () => {
+    const response = await api.get<Friend[]>('/api/friends/pending');
+    return response.data;
+  },
+
+  acceptRequest: async (requestId: number) => {
+    const response = await api.post(`/api/friends/${requestId}/accept`);
+    return response.data;
+  },
+
+  rejectRequest: async (requestId: number) => {
+    await api.post(`/api/friends/${requestId}/reject`);
+  },
+
+  removeFriend: async (friendId: number) => {
+    await api.delete(`/api/friends/${friendId}`);
+  },
+
+  searchUsers: async (query: string) => {
+    const response = await api.get<User[]>('/api/friends/search', {
+      params: { query },
+    });
+    return response.data;
+  },
+};
+
+// Leaderboard API
+export const leaderboardAPI = {
+  getGlobal: async (limit: number = 50) => {
+    const response = await api.get<LeaderboardEntry[]>('/api/leaderboard/global', {
+      params: { limit },
+    });
+    return response.data;
+  },
+
+  getFriends: async () => {
+    const response = await api.get<LeaderboardEntry[]>('/api/leaderboard/friends');
+    return response.data;
+  },
+
+  getGroup: async (groupId: number) => {
+    const response = await api.get<LeaderboardEntry[]>(`/api/leaderboard/group/${groupId}`);
+    return response.data;
+  },
+};
+
+// Schedule API
+export const scheduleAPI = {
+  parseScheduleWithAI: async (text: string) => {
+    const response = await api.post('/api/schedule/parse', { text });
+    return response.data;
+  },
+
+  importFromLETI: async (studentId: string, groupNumber: string) => {
+    const response = await api.post('/api/schedule/import-leti', {
+      student_id: studentId,
+      group_number: groupNumber,
+    });
+    return response.data;
+  },
+
+  getSchedule: async (startDate?: string, endDate?: string) => {
+    const response = await api.get('/api/schedule/', {
+      params: { start_date: startDate, end_date: endDate },
     });
     return response.data;
   },

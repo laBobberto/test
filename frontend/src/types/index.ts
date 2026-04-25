@@ -105,3 +105,38 @@ export type PriorityCategory =
   | 'social' 
   | 'household';
 
+export interface Group {
+  id: number;
+  name: string;
+  description?: string;
+  owner_id: number;
+  created_at: string;
+  member_count?: number;
+  is_member?: boolean;
+}
+
+export interface GroupMember {
+  id: number;
+  user_id: number;
+  group_id: number;
+  username: string;
+  joined_at: string;
+  role: 'owner' | 'member';
+}
+
+export interface Friend {
+  id: number;
+  user_id: number;
+  friend_id: number;
+  username: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  created_at: string;
+}
+
+export interface LeaderboardEntry {
+  user_id: number;
+  username: string;
+  total_points: number;
+  rank: number;
+}
+

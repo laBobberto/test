@@ -12,6 +12,9 @@ import ProfilePage from './pages/ProfilePage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import SocialPage from './pages/SocialPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import GroupsPage from './pages/GroupsPage';
+import FriendsPage from './pages/FriendsPage';
+import SchedulePage from './pages/SchedulePage';
 
 const queryClient = new QueryClient();
 
@@ -93,6 +96,33 @@ function App() {
             element={
               <ProtectedRoute>
                 <AnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/groups"
+            element={
+              <ProtectedRoute>
+                <GroupsPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/friends"
+            element={
+              <ProtectedRoute>
+                <FriendsPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/schedule"
+            element={
+              <ProtectedRoute>
+                <SchedulePage />
               </ProtectedRoute>
             }
           />
