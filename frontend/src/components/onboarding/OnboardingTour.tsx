@@ -1,6 +1,7 @@
 import React from 'react';
-import Joyride, { CallBackProps, Step, STATUS } from 'react-joyride';
-import { useOnboardingStore, TourType } from '../../store/onboardingStore';
+import { Joyride, CallBackProps, Step, STATUS } from 'react-joyride';
+import { useOnboardingStore } from '../../store/onboardingStore';
+import type { TourType } from '../../store/onboardingStore';
 
 interface OnboardingTourProps {
   tourType: TourType;
