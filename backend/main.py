@@ -9,7 +9,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="LifeBalance SPb API",
     description="Personal urban assistant for Saint Petersburg",
-    version="2.0.0"
+    version="3.0.0"
 )
 
 # CORS middleware
