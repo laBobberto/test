@@ -167,3 +167,28 @@ class PlanningSession(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     user = relationship("User", backref="planning_sessions")
+
+class Friendship(Base):
+    __tablename__ = "friendships"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    friend_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    status = Column(String, default='pending')  # pending, accepted, blocked
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User", foreign_keys=[user_id], backref="friendships_sent")
+    friend = relationship("User", foreign_keys=[friend_id], backref="friendships_received")
+
+class Message(Base):
+    __tablename__ = "messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    from_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    to_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    read_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    sender = relationship("User", foreign_keys=[from_user_id], backref="messages_sent")
+    recipient = relationship("User", foreign_keys=[to_user_id], backref="messages_received")
