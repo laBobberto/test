@@ -145,3 +145,17 @@ class UserStatsResponse(BaseModel):
     completed_activities: int
     achievements_count: int
     balance_score: float
+
+# Leaderboard schemas
+class UserRankResponse(BaseModel):
+    user_id: int
+    username: str
+    total_points: int
+    rank: int
+    weekly_points: int
+    monthly_points: int
+    
+class LeaderboardResponse(BaseModel):
+    users: List[UserRankResponse]
+    my_rank: Optional[UserRankResponse] = None
+    total_users: int

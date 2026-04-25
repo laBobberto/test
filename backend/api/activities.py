@@ -11,6 +11,7 @@ from models.schemas import (
     AchievementResponse, UserStatsResponse
 )
 from api.user import get_current_user
+from services.points_service import points_service
 
 router = APIRouter(prefix="/api/activities", tags=["activities"])
 
@@ -76,11 +77,24 @@ async def complete_activity(
             detail="Activity already completed"
         )
     
+    # Calculate points
+    points = points_service.calculate_activity_points(activity)
+    
     # Mark as completed and award points
     activity.completed = True
-    activity.points_earned = 25  # Base points
+    activity.points_earned = points
     
     db.commit()
+    
+    # Award points to user
+    points_service.award_points(
+        db,
+        current_user.id,
+        points,
+        f"Completed activity: {activity.title}",
+        activity.category
+    )
+    
     db.refresh(activity)
     
     return activity

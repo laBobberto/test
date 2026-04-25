@@ -114,3 +114,29 @@ class Schedule(Base):
     location = Column(String)
     teacher = Column(String)
     cached_at = Column(DateTime, default=datetime.utcnow)
+
+class UserRating(Base):
+    __tablename__ = "user_ratings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    total_points = Column(Integer, default=0)
+    rank = Column(Integer, default=0)
+    weekly_points = Column(Integer, default=0)
+    monthly_points = Column(Integer, default=0)
+    category_points = Column(Text)  # JSON: {"education": 100, "health": 50, ...}
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User", backref="rating")
+
+class PointsHistory(Base):
+    __tablename__ = "points_history"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    points = Column(Integer, nullable=False)
+    reason = Column(String, nullable=False)
+    category = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User", backref="points_history")

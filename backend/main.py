@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database.connection import Base, engine
-from api import auth, user, plan, events, activities, maps
+from api import auth, user, plan, events, activities, maps, leaderboard
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -28,6 +28,7 @@ app.include_router(plan.router)
 app.include_router(events.router)
 app.include_router(activities.router)
 app.include_router(maps.router)
+app.include_router(leaderboard.router)
 
 @app.get("/")
 async def root():
