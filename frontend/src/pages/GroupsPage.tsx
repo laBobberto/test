@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { groupsAPI } from '../services/api';
+import { groupsAPI, chatAPI } from '../services/api';
 import type { Group } from '../types';
+import ChatWindow from '../components/ChatWindow';
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -9,6 +10,8 @@ export default function GroupsPage() {
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
   const [error, setError] = useState('');
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const [activeChatTitle, setActiveChatTitle] = useState('');
 
   useEffect(() => {
     loadGroups();
@@ -61,6 +64,16 @@ export default function GroupsPage() {
     }
   };
 
+  const handleOpenChat = async (group: Group) => {
+    try {
+      const chat = await chatAPI.getGroupChat(group.id);
+      setActiveChatId(chat.id);
+      setActiveChatTitle(group.name);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Не удалось открыть чат');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -97,21 +110,31 @@ export default function GroupsPage() {
                   {group.description}
                 </p>
               )}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-[var(--text-tertiary)]">
                   {group.member_count || 0} участников
                 </span>
+              </div>
+              <div className="flex gap-2">
                 {group.is_member ? (
-                  <button
-                    onClick={() => handleLeaveGroup(group.id)}
-                    className="btn-secondary text-sm"
-                  >
-                    Покинуть
-                  </button>
+                  <>
+                    <button
+                      onClick={() => handleOpenChat(group)}
+                      className="btn-primary flex-1 text-sm"
+                    >
+                      Чат
+                    </button>
+                    <button
+                      onClick={() => handleLeaveGroup(group.id)}
+                      className="btn-secondary flex-1 text-sm"
+                    >
+                      Покинуть
+                    </button>
+                  </>
                 ) : (
                   <button
                     onClick={() => handleJoinGroup(group.id)}
-                    className="btn-primary text-sm"
+                    className="btn-primary w-full text-sm"
                   >
                     Вступить
                   </button>
@@ -179,7 +202,16 @@ export default function GroupsPage() {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
+      </div>
+
+      {activeChatId && (
+        <ChatWindow
+          chatId={activeChatId}
+          chatTitle={activeChatTitle}
+          onClose={() => setActiveChatId(null)}
+        />
       )}
     </div>
   );

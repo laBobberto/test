@@ -140,3 +140,24 @@ export interface LeaderboardEntry {
   rank: number;
 }
 
+export interface ChatMessage {
+  id: number;
+  chat_id: number;
+  user_id: number;
+  username: string;
+  content: string;
+  created_at: string;
+}
+
+export interface Chat {
+  id: number;
+  type: 'group' | 'direct';
+  group_id?: number;
+  group_name?: string;
+  friend_id?: number;
+  friend_username?: string;
+  last_message?: string;
+  last_message_at?: string;
+  unread_count?: number;
+}
+

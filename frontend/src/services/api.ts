@@ -11,7 +11,9 @@ import type {
   Group,
   GroupMember,
   Friend,
-  LeaderboardEntry
+  LeaderboardEntry,
+  Chat,
+  ChatMessage
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -340,5 +342,41 @@ export const scheduleAPI = {
       params: { start_date: startDate, end_date: endDate },
     });
     return response.data;
+  },
+};
+
+// Chat API
+export const chatAPI = {
+  getChats: async () => {
+    const response = await api.get<Chat[]>('/api/chats/');
+    return response.data;
+  },
+
+  getGroupChat: async (groupId: number) => {
+    const response = await api.get<Chat>(`/api/chats/group/${groupId}`);
+    return response.data;
+  },
+
+  getDirectChat: async (friendId: number) => {
+    const response = await api.get<Chat>(`/api/chats/direct/${friendId}`);
+    return response.data;
+  },
+
+  getMessages: async (chatId: number, limit: number = 50, offset: number = 0) => {
+    const response = await api.get<ChatMessage[]>(`/api/chats/${chatId}/messages`, {
+      params: { limit, offset },
+    });
+    return response.data;
+  },
+
+  sendMessage: async (chatId: number, content: string) => {
+    const response = await api.post<ChatMessage>(`/api/chats/${chatId}/messages`, {
+      content,
+    });
+    return response.data;
+  },
+
+  markAsRead: async (chatId: number) => {
+    await api.post(`/api/chats/${chatId}/read`);
   },
 };

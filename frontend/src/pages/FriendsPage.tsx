@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { friendsAPI } from '../services/api';
+import { friendsAPI, chatAPI } from '../services/api';
 import type { Friend, User } from '../types';
+import ChatWindow from '../components/ChatWindow';
 
 export default function FriendsPage() {
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -10,6 +11,8 @@ export default function FriendsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>('friends');
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const [activeChatTitle, setActiveChatTitle] = useState('');
 
   useEffect(() => {
     loadFriends();
@@ -86,6 +89,16 @@ export default function FriendsPage() {
     }
   };
 
+  const handleOpenChat = async (friend: Friend) => {
+    try {
+      const chat = await chatAPI.getDirectChat(friend.friend_id);
+      setActiveChatId(chat.id);
+      setActiveChatTitle(friend.username);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Не удалось открыть чат');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -146,12 +159,20 @@ export default function FriendsPage() {
                 <p className="text-sm text-[var(--text-tertiary)] mb-4">
                   Друзья с {new Date(friend.created_at).toLocaleDateString()}
                 </p>
-                <button
-                  onClick={() => handleRemoveFriend(friend.friend_id)}
-                  className="btn-secondary w-full text-sm"
-                >
-                  Удалить из друзей
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleOpenChat(friend)}
+                    className="btn-primary flex-1 text-sm"
+                  >
+                    Написать
+                  </button>
+                  <button
+                    onClick={() => handleRemoveFriend(friend.friend_id)}
+                    className="btn-secondary flex-1 text-sm"
+                  >
+                    Удалить
+                  </button>
+                </div>
               </div>
             ))}
             {friends.length === 0 && (
@@ -240,6 +261,14 @@ export default function FriendsPage() {
           </div>
         )}
       </div>
+
+      {activeChatId && (
+        <ChatWindow
+          chatId={activeChatId}
+          chatTitle={activeChatTitle}
+          onClose={() => setActiveChatId(null)}
+        />
+      )}
     </div>
   );
 }
