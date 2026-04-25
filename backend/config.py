@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "postgresql://lifebalance:lifebalance@localhost:5432/lifebalance_db"
+    DATABASE_URL: str = "sqlite:///./lifebalance.db"
     
     # JWT
     SECRET_KEY: str = "your-secret-key-change-in-production"
@@ -17,6 +17,14 @@ class Settings(BaseSettings):
     # External APIs
     LETI_API_URL: str = "https://digital.etu.ru/api"
     EVENTS_API_URL: str = "https://researchinspb.ru/api/v1/public/event/"
+    
+    # Weather API
+    OPENWEATHER_API_KEY: str = "5814a429e169590c4ac15e1d08d0ebb5"
+    OPENWEATHER_API_URL: str = "https://api.openweathermap.org/data/2.5"
+    
+    # Yandex Maps API
+    YANDEX_MAPS_API_KEY: str = "5a5c211d-0ae2-46ec-b0d9-da08e89ebddf"
+    YANDEX_GEOCODER_URL: str = "https://geocode-maps.yandex.ru/1.x/"
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
