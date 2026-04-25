@@ -140,3 +140,30 @@ class PointsHistory(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     user = relationship("User", backref="points_history")
+
+class PlanTemplate(Base):
+    __tablename__ = "plan_templates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text)
+    category = Column(String)
+    activities_template = Column(Text)  # JSON
+    is_public = Column(Boolean, default=True)
+    creator_id = Column(Integer, ForeignKey("users.id"))
+    usage_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    creator = relationship("User", backref="plan_templates")
+
+class PlanningSession(Base):
+    __tablename__ = "planning_sessions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    session_id = Column(String, unique=True, index=True)
+    state = Column(Text)  # JSON
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User", backref="planning_sessions")

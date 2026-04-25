@@ -8,10 +8,65 @@ from database.connection import get_db
 from models.models import User, Activity, Priority, Event
 from models.schemas import DailyPlanRequest, DailyPlanResponse, ActivityResponse, ChatRequest, ChatResponse
 from services.ai_service import ai_service
+from services.enhanced_planning_service import enhanced_planning_service
 from api.user import get_current_user
 from integrations.external_apis import events_client
+from integrations.weather_api import weather_api
 
 router = APIRouter(prefix="/api/plan", tags=["plan"])
+
+@router.post("/generate", response_model=ChatResponse)
+async def generate_plan(
+    request: ChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Generate daily plan using AI with weather context"""
+    
+    # Get user priorities
+    priorities = db.query(Priority).filter(Priority.user_id == current_user.id).all()
+    priorities_dict = {p.category: p.value for p in priorities}
+    
+    # Get user's schedule for today
+    today = datetime.now().date()
+    schedule = db.query(Activity).filter(
+        Activity.user_id == current_user.id,
+        Activity.start_time >= today,
+        Activity.start_time < today + timedelta(days=1)
+    ).all()
+    
+    schedule_data = [
+        {
+            "title": s.title,
+            "start_time": s.start_time.isoformat(),
+            "end_time": s.end_time.isoformat(),
+            "location": s.location
+        }
+        for s in schedule
+    ]
+    
+    # Get available events
+    events = await events_client.get_events(limit=10)
+    
+    # Get weather
+    weather = await weather_api.get_current_weather('Saint Petersburg')
+    
+    # Prepare context for AI
+    user_data = {
+        "priorities": priorities_dict,
+        "schedule": schedule_data,
+        "events": events,
+        "weather": weather,
+        "user_message": request.message
+    }
+    
+    # Generate plan with AI
+    ai_response = await ai_service.generate_plan(user_data)
+    
+    return ChatResponse(
+        response=ai_response,
+        suggestions=["Добавить спортивную активность", "Посмотреть события на выходные"]
+    )
 
 @router.post("/generate", response_model=ChatResponse)
 async def generate_plan(
