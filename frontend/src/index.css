@@ -1,17 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Light theme - Periwinkle base */
+  --bg-primary: #F5F3FF;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #EDE9FE;
+  --text-primary: #1E1B4B;
+  --text-secondary: #4C1D95;
+  --text-tertiary: #7C3AED;
+  --accent-primary: #6366F1;
+  --accent-secondary: #8B5CF6;
+  --accent-tertiary: #A78BFA;
+  --border-primary: #DDD6FE;
+  --border-secondary: #EDE9FE;
+  --shadow: rgba(99, 102, 241, 0.15);
+
+  font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #0f172a;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,27 +31,78 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+[data-theme="dark"] {
+  /* Dark theme - Dark Plum base */
+  --bg-primary: #1A0B2E;
+  --bg-secondary: #2D1B4E;
+  --bg-tertiary: #3D2B5E;
+  --text-primary: #E9D5FF;
+  --text-secondary: #C4B5FD;
+  --text-tertiary: #A78BFA;
+  --accent-primary: #A78BFA;
+  --accent-secondary: #C4B5FD;
+  --accent-tertiary: #8B5CF6;
+  --border-primary: #3D2B5E;
+  --border-secondary: #2D1B4E;
+  --shadow: rgba(167, 139, 250, 0.2);
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--bg-primary);
+  transition: background-color 0.3s ease;
+}
+
+.syne {
+  font-family: 'Syne', sans-serif;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply relative bg-[var(--accent-primary)] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:bg-[var(--accent-secondary)] hover:scale-[1.02] hover:shadow-lg;
+    box-shadow: 0 4px 14px 0 var(--shadow);
   }
-  
+
   .btn-secondary {
-    @apply bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply relative bg-[var(--bg-tertiary)] text-[var(--text-primary)] font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:bg-[var(--bg-secondary)] border border-[var(--border-primary)];
   }
-  
+
   .card {
-    @apply bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-700;
+    @apply relative bg-[var(--bg-secondary)] p-8 rounded-2xl border border-[var(--border-primary)] transition-all duration-300;
+    box-shadow: 0 8px 32px 0 var(--shadow);
   }
-  
+
+  .card-hover {
+    @apply hover:scale-[1.01] hover:shadow-xl;
+  }
+
   .input {
-    @apply w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all duration-200;
+  }
+
+  .input:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  [data-theme="dark"] .input:focus {
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+  }
+
+  .glass {
+    @apply backdrop-blur-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)];
+    background-color: var(--bg-secondary);
+    opacity: 0.95;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent;
   }
 }
 
@@ -50,23 +113,23 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: var(--bg-tertiary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: var(--accent-primary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: var(--accent-secondary);
 }
 
 /* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -74,13 +137,88 @@ body {
   }
 }
 
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--accent-primary) 50%,
+    transparent 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Brutal grid */
+.brutal-grid {
+  background:
+    radial-gradient(ellipse 1200px 800px at 10% 20%, rgba(139, 92, 246, 0.08), transparent 50%),
+    radial-gradient(ellipse 1000px 1000px at 90% 70%, rgba(99, 102, 241, 0.06), transparent 50%),
+    radial-gradient(ellipse 800px 600px at 50% 90%, rgba(167, 139, 250, 0.05), transparent 50%),
+    var(--bg-primary);
+  background-attachment: fixed;
+}
+
+[data-theme="dark"] .brutal-grid {
+  background:
+    radial-gradient(ellipse 1200px 800px at 10% 20%, rgba(167, 139, 250, 0.06), transparent 50%),
+    radial-gradient(ellipse 1000px 1000px at 90% 70%, rgba(196, 181, 253, 0.04), transparent 50%),
+    radial-gradient(ellipse 800px 600px at 50% 90%, rgba(139, 92, 246, 0.03), transparent 50%),
+    var(--bg-primary);
+  background-attachment: fixed;
+}
+
+/* Theme transition */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 /* Leaflet map styles */
 .leaflet-container {
   height: 100%;
   width: 100%;
-  border-radius: 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border-primary);
 }

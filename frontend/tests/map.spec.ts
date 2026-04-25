@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 const TEST_USER = {
   email: 'test@example.com',
-  password: 'Test123!@#'
+  password: 'testpass123'
 };
 
 test.describe('Map Page - Display', () => {
@@ -11,14 +11,20 @@ test.describe('Map Page - Display', () => {
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button:has-text("Войти")');
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 });
-    
+    await page.waitForURL(/\/(dashboard|onboarding|priorities)/, { timeout: 10000 });
+
+    // If on onboarding or priorities, navigate to dashboard
+    if (page.url().includes('onboarding') || page.url().includes('priorities')) {
+      await page.goto('http://localhost:5173/dashboard');
+      await page.waitForURL(/\/dashboard/, { timeout: 5000 });
+    }
+
     await page.click('text=Карта');
     await page.waitForURL(/\/map/, { timeout: 5000 });
   });
 
   test('should display map page', async ({ page }) => {
-    await expect(page.locator('text=Map')).toBeVisible();
+    await expect(page.locator('text=События на карте')).toBeVisible();
   });
 
   test('should load Yandex Maps', async ({ page }) => {
@@ -82,8 +88,14 @@ test.describe('Map Page - Search', () => {
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button:has-text("Войти")');
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 });
-    
+    await page.waitForURL(/\/(dashboard|onboarding|priorities)/, { timeout: 10000 });
+
+    // If on onboarding or priorities, navigate to dashboard
+    if (page.url().includes('onboarding') || page.url().includes('priorities')) {
+      await page.goto('http://localhost:5173/dashboard');
+      await page.waitForURL(/\/dashboard/, { timeout: 5000 });
+    }
+
     await page.click('text=Карта');
     await page.waitForURL(/\/map/, { timeout: 5000 });
   });
@@ -163,8 +175,14 @@ test.describe('Map Page - Routes', () => {
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button:has-text("Войти")');
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 });
-    
+    await page.waitForURL(/\/(dashboard|onboarding|priorities)/, { timeout: 10000 });
+
+    // If on onboarding or priorities, navigate to dashboard
+    if (page.url().includes('onboarding') || page.url().includes('priorities')) {
+      await page.goto('http://localhost:5173/dashboard');
+      await page.waitForURL(/\/dashboard/, { timeout: 5000 });
+    }
+
     await page.click('text=Карта');
     await page.waitForURL(/\/map/, { timeout: 5000 });
   });
@@ -304,8 +322,14 @@ test.describe('Map Page - Traffic', () => {
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button:has-text("Войти")');
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 });
-    
+    await page.waitForURL(/\/(dashboard|onboarding|priorities)/, { timeout: 10000 });
+
+    // If on onboarding or priorities, navigate to dashboard
+    if (page.url().includes('onboarding') || page.url().includes('priorities')) {
+      await page.goto('http://localhost:5173/dashboard');
+      await page.waitForURL(/\/dashboard/, { timeout: 5000 });
+    }
+
     await page.click('text=Карта');
     await page.waitForURL(/\/map/, { timeout: 5000 });
   });
@@ -353,8 +377,14 @@ test.describe('Map Page - Events', () => {
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button:has-text("Войти")');
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 });
-    
+    await page.waitForURL(/\/(dashboard|onboarding|priorities)/, { timeout: 10000 });
+
+    // If on onboarding or priorities, navigate to dashboard
+    if (page.url().includes('onboarding') || page.url().includes('priorities')) {
+      await page.goto('http://localhost:5173/dashboard');
+      await page.waitForURL(/\/dashboard/, { timeout: 5000 });
+    }
+
     await page.click('text=Карта');
     await page.waitForURL(/\/map/, { timeout: 5000 });
   });
@@ -436,8 +466,14 @@ test.describe('Map Page - Interactions', () => {
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button:has-text("Войти")');
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 });
-    
+    await page.waitForURL(/\/(dashboard|onboarding|priorities)/, { timeout: 10000 });
+
+    // If on onboarding or priorities, navigate to dashboard
+    if (page.url().includes('onboarding') || page.url().includes('priorities')) {
+      await page.goto('http://localhost:5173/dashboard');
+      await page.waitForURL(/\/dashboard/, { timeout: 5000 });
+    }
+
     await page.click('text=Карта');
     await page.waitForURL(/\/map/, { timeout: 5000 });
   });
@@ -502,8 +538,14 @@ test.describe('Map Page - Responsive Design', () => {
     await page.fill('input[type="email"]', TEST_USER.email);
     await page.fill('input[type="password"]', TEST_USER.password);
     await page.click('button:has-text("Войти")');
-    await page.waitForURL(/\/dashboard/, { timeout: 10000 });
-    
+    await page.waitForURL(/\/(dashboard|onboarding|priorities)/, { timeout: 10000 });
+
+    // If on onboarding or priorities, navigate to dashboard
+    if (page.url().includes('onboarding') || page.url().includes('priorities')) {
+      await page.goto('http://localhost:5173/dashboard');
+      await page.waitForURL(/\/dashboard/, { timeout: 5000 });
+    }
+
     await page.click('text=Карта');
     await page.waitForURL(/\/map/, { timeout: 5000 });
   });

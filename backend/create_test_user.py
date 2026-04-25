@@ -11,6 +11,7 @@ def create_test_user():
     register_data = {
         "email": "test@example.com",
         "username": "testuser",
+        "name": "Test User",
         "password": "testpass123",
         "roles": ["student", "resident"]
     }
@@ -54,19 +55,21 @@ def create_test_user():
 def set_priorities(token):
     print("\nSetting priorities...")
     
-    priorities = [
-        {"category": "education", "value": 25},
-        {"category": "career", "value": 20},
-        {"category": "health", "value": 20},
-        {"category": "leisure", "value": 15},
-        {"category": "social", "value": 10},
-        {"category": "household", "value": 10}
-    ]
-    
+    priorities_data = {
+        "priorities": [
+            {"category": "education", "value": 25},
+            {"category": "career", "value": 20},
+            {"category": "health", "value": 20},
+            {"category": "leisure", "value": 15},
+            {"category": "social", "value": 10},
+            {"category": "household", "value": 10}
+        ]
+    }
+
     headers = {"Authorization": f"Bearer {token}"}
-    
+
     try:
-        response = requests.put(f"{BASE_URL}/api/user/priorities", json=priorities, headers=headers)
+        response = requests.put(f"{BASE_URL}/api/user/priorities", json=priorities_data, headers=headers)
         print(f"Priorities response: {response.status_code}")
         if response.status_code == 200:
             print(f"Priorities set: {response.json()}")

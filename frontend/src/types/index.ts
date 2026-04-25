@@ -105,18 +105,3 @@ export type PriorityCategory =
   | 'social' 
   | 'household';
 
-// Explicit re-exports to ensure all types are available
-export type {
-  User,
-  Priority,
-  Activity,
-  ActivityFormData,
-  Event,
-  Achievement,
-  UserStats,
-  DailyPlan,
-  ChatMessage,
-  AuthResponse,
-  UserRole,
-  PriorityCategory as PriorityCategoryType
-};

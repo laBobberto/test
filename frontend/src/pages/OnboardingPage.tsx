@@ -1,27 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authAPI, userAPI } from '../services/api';
 import { useAuthStore } from '../store';
 import type { UserRole } from '../types';
 
-const roles: { id: UserRole; title: string; description: string; icon: string }[] = [
+const roles: { id: UserRole; title: string; description: string }[] = [
   {
     id: 'student',
     title: 'Студент',
     description: 'Учеба, карьерное развитие, студенческая жизнь',
-    icon: '🎓',
   },
   {
     id: 'resident',
     title: 'Житель',
     description: 'Быт, досуг, городские сервисы',
-    icon: '🏠',
   },
   {
     id: 'tourist',
     title: 'Турист',
     description: 'Достопримечательности, культура, маршруты',
-    icon: '🗺️',
   },
 ];
 
@@ -59,7 +56,6 @@ export default function OnboardingPage() {
 
     try {
       if (registrationData) {
-        // Register new user
         await authAPI.register(
           registrationData.email,
           registrationData.username,
@@ -67,14 +63,12 @@ export default function OnboardingPage() {
           selectedRoles
         );
 
-        // Login
         const response = await authAPI.login(
           registrationData.email,
           registrationData.password
         );
         setToken(response.access_token);
 
-        // Get user profile
         const user = await userAPI.getProfile();
         setUser(user);
       }
@@ -88,55 +82,60 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-      <div className="card max-w-2xl w-full animate-fade-in">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Выберите свою роль
-          </h1>
-          <p className="text-gray-400">
-            Можно выбрать несколько вариантов
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {roles.map((role) => (
-            <button
-              key={role.id}
-              onClick={() => toggleRole(role.id)}
-              className={`p-6 rounded-xl border-2 transition-all duration-200 ${
-                selectedRoles.includes(role.id)
-                  ? 'border-primary-500 bg-primary-500/10'
-                  : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'
-              }`}
-            >
-              <div className="text-5xl mb-3">{role.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                {role.title}
-              </h3>
-              <p className="text-sm text-gray-400">{role.description}</p>
-            </button>
-          ))}
-        </div>
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-lg mb-4">
-            {error}
+    <div className="min-h-screen flex items-center justify-center p-4 brutal-grid">
+      <div className="max-w-3xl w-full animate-fade-in">
+        <div className="card">
+          <div className="mb-10">
+            <h1 className="text-4xl font-bold syne mb-3 gradient-text">
+              Выберите роль
+            </h1>
+            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+              Можно выбрать несколько вариантов
+            </p>
           </div>
-        )}
 
-        <button
-          onClick={handleContinue}
-          disabled={loading || selectedRoles.length === 0}
-          className="btn-primary w-full"
-        >
-          {loading ? 'Загрузка...' : 'Продолжить'}
-        </button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {roles.map((role) => (
+              <button
+                key={role.id}
+                onClick={() => toggleRole(role.id)}
+                className={`p-8 rounded-2xl border-2 transition-all duration-300 ${
+                  selectedRoles.includes(role.id)
+                    ? 'bg-[var(--accent-primary)] text-white border-[var(--accent-primary)] shadow-xl scale-105'
+                    : 'bg-[var(--bg-tertiary)] border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:scale-102'
+                }`}
+              >
+                <h3 className="text-2xl font-bold mb-3 syne">
+                  {role.title}
+                </h3>
+                <p className={`text-sm font-medium ${
+                  selectedRoles.includes(role.id) ? 'text-white/90' : ''
+                }`} style={!selectedRoles.includes(role.id) ? { color: 'var(--text-secondary)' } : {}}>
+                  {role.description}
+                </p>
+              </button>
+            ))}
+          </div>
 
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-400">
-            Шаг 1 из 2
-          </p>
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-6">
+              <p className="text-red-500 text-sm font-medium">{error}</p>
+            </div>
+          )}
+
+          <button
+            onClick={handleContinue}
+            disabled={loading || selectedRoles.length === 0}
+            className="btn-primary w-full text-base font-semibold mb-6"
+          >
+            {loading ? 'Загрузка...' : 'Продолжить'}
+          </button>
+
+          <div className="text-center pt-6 border-t border-[var(--border-primary)]">
+            <p className="mono text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              Шаг 1 / 2
+            </p>
+          </div>
         </div>
       </div>
     </div>

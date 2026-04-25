@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI, activitiesAPI } from '../services/api';
 import { useAuthStore, usePrioritiesStore, useStatsStore } from '../store';
+import Navigation from '../components/Navigation';
 import type { Achievement } from '../types';
 
 export default function ProfilePage() {
@@ -9,7 +10,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const { priorities } = usePrioritiesStore();
   const { stats } = useStatsStore();
 
@@ -20,16 +21,13 @@ export default function ProfilePage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      
-      // Load priorities
+
       const userPriorities = await userAPI.getPriorities();
       usePrioritiesStore.getState().setPriorities(userPriorities);
 
-      // Load achievements
       const userAchievements = await activitiesAPI.getAchievements();
       setAchievements(userAchievements);
 
-      // Load stats
       const userStats = await activitiesAPI.getStats();
       useStatsStore.getState().setStats(userStats);
     } catch (error) {
@@ -39,181 +37,139 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  const categoryIcons: Record<string, string> = {
-    education: '📚',
-    career: '💼',
-    health: '💪',
-    leisure: '🎭',
-    social: '👥',
-    household: '🏠',
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Загрузка...</div>
+      <div className="min-h-screen flex items-center justify-center brutal-grid">
+        <div className="text-center">
+          <div className="text-5xl mb-4 syne font-bold gradient-text">Загрузка</div>
+          <div className="h-1 w-32 bg-[var(--accent-primary)] mx-auto animate-pulse rounded-full"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="text-gray-400 hover:text-white"
-              >
-                ← Назад
-              </button>
-              <h1 className="text-2xl font-bold text-white">Профиль</h1>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen brutal-grid">
+      <Navigation />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* User Info */}
-        <div className="card mb-6">
-          <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center text-4xl text-white font-bold">
+        <div className="card mb-8">
+          <div className="flex items-center gap-6 mb-6">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-3xl font-bold text-white">
               {user?.username.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-1">
+            <div>
+              <h1 className="text-3xl font-bold syne gradient-text mb-2">
                 {user?.username}
-              </h2>
-              <p className="text-gray-400 mb-2">{user?.email}</p>
-              <div className="flex gap-2">
-                {user?.roles.map((role) => (
-                  <span
-                    key={role}
-                    className="px-3 py-1 bg-primary-500/20 text-primary-400 rounded-full text-sm"
-                  >
-                    {role === 'student' && '🎓 Студент'}
-                    {role === 'resident' && '🏠 Житель'}
-                    {role === 'tourist' && '🗺️ Турист'}
-                  </span>
-                ))}
-              </div>
+              </h1>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {user?.email}
+              </p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="btn-secondary"
-            >
-              Выйти
-            </button>
           </div>
-        </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="card text-center">
-            <div className="text-4xl mb-2">🏆</div>
-            <p className="text-3xl font-bold text-white mb-1">
-              {stats?.total_points || 0}
-            </p>
-            <p className="text-gray-400 text-sm">Баллов</p>
-          </div>
-          <div className="card text-center">
-            <div className="text-4xl mb-2">🔥</div>
-            <p className="text-3xl font-bold text-white mb-1">
-              {stats?.current_streak || 0}
-            </p>
-            <p className="text-gray-400 text-sm">Дней подряд</p>
-          </div>
-          <div className="card text-center">
-            <div className="text-4xl mb-2">✅</div>
-            <p className="text-3xl font-bold text-white mb-1">
-              {stats?.completed_activities || 0}
-            </p>
-            <p className="text-gray-400 text-sm">Выполнено</p>
-          </div>
-          <div className="card text-center">
-            <div className="text-4xl mb-2">🎖️</div>
-            <p className="text-3xl font-bold text-white mb-1">
-              {stats?.achievements_count || 0}
-            </p>
-            <p className="text-gray-400 text-sm">Достижений</p>
-          </div>
-        </div>
-
-        {/* Priorities */}
-        <div className="card mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Приоритеты</h2>
-            <button
-              onClick={() => navigate('/priorities')}
-              className="text-primary-400 hover:text-primary-300 text-sm"
-            >
-              Изменить
-            </button>
-          </div>
-          <div className="space-y-3">
-            {priorities.map((priority) => (
-              <div key={priority.category}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">
-                      {categoryIcons[priority.category]}
-                    </span>
-                    <span className="text-white">{priority.category}</span>
-                  </div>
-                  <span className="text-white font-bold">
-                    {priority.value}%
-                  </span>
-                </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
-                  <div
-                    className="bg-primary-500 h-2 rounded-full transition-all"
-                    style={{ width: `${priority.value}%` }}
-                  />
-                </div>
-              </div>
+          <div className="flex gap-3">
+            {user?.roles.map((role) => (
+              <span
+                key={role}
+                className="px-4 py-2 bg-[var(--bg-tertiary)] rounded-lg text-sm font-semibold"
+              >
+                {role === 'student' ? 'Студент' : role === 'resident' ? 'Житель' : 'Турист'}
+              </span>
             ))}
           </div>
         </div>
 
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[
+            { label: 'Баллы', value: stats?.total_points || 0, icon: '⭐' },
+            { label: 'Стрик', value: stats?.current_streak || 0, icon: '🔥' },
+            { label: 'Выполнено', value: stats?.completed_activities || 0, icon: '✓' }
+          ].map((stat, i) => (
+            <div
+              key={stat.label}
+              className="card animate-fade-in"
+              style={{ animationDelay: `${i * 0.1}s` }}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                  {stat.label}
+                </p>
+                <span className="text-2xl">{stat.icon}</span>
+              </div>
+              <p className="text-4xl font-bold syne gradient-text">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Priorities */}
+        <div className="card mb-8">
+          <h2 className="text-2xl font-bold syne gradient-text mb-6">Приоритеты</h2>
+          <div className="space-y-4">
+            {priorities.map((priority) => (
+              <div key={priority.category}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold capitalize">
+                    {priority.category === 'education' ? 'Образование' :
+                     priority.category === 'career' ? 'Карьера' :
+                     priority.category === 'health' ? 'Здоровье' :
+                     priority.category === 'leisure' ? 'Досуг' :
+                     priority.category === 'social' ? 'Социализация' :
+                     'Быт'}
+                  </span>
+                  <span className="font-bold gradient-text">{priority.value}%</span>
+                </div>
+                <div className="h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"
+                    style={{ width: `${priority.value}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => navigate('/priorities')}
+            className="btn-secondary w-full mt-6"
+          >
+            Изменить приоритеты
+          </button>
+        </div>
+
         {/* Achievements */}
         <div className="card">
-          <h2 className="text-xl font-bold text-white mb-4">Достижения</h2>
-          {achievements.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">
-              Пока нет достижений. Выполняйте активности, чтобы получить награды!
-            </p>
-          ) : (
+          <h2 className="text-2xl font-bold syne gradient-text mb-6">Достижения</h2>
+          {achievements.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {achievements.map((achievement) => (
+              {achievements.map((achievement, i) => (
                 <div
                   key={achievement.id}
-                  className="p-4 bg-slate-700/50 rounded-lg border border-slate-600"
+                  className="card bg-[var(--bg-tertiary)] animate-fade-in"
+                  style={{ animationDelay: `${i * 0.05}s` }}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="text-4xl">{achievement.icon || '🏆'}</div>
-                    <div className="flex-1">
-                      <h3 className="text-white font-semibold mb-1">
-                        {achievement.name}
-                      </h3>
-                      {achievement.description && (
-                        <p className="text-gray-400 text-sm mb-2">
-                          {achievement.description}
-                        </p>
-                      )}
-                      <p className="text-primary-400 text-sm font-medium">
+                  <div className="flex items-start gap-4">
+                    <span className="text-3xl">{achievement.icon}</span>
+                    <div>
+                      <h3 className="font-bold mb-1">{achievement.title}</h3>
+                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                        {achievement.description}
+                      </p>
+                      <p className="text-xs mt-2 font-semibold" style={{ color: 'var(--accent-primary)' }}>
                         +{achievement.points} баллов
                       </p>
                     </div>
                   </div>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-5xl mb-4 opacity-30">🏆</div>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                Пока нет достижений. Выполняйте задачи, чтобы получить награды!
+              </p>
             </div>
           )}
         </div>

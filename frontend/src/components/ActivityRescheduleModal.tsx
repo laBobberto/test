@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Activity } from '../types';
+import type { Activity } from '../types';
 
 interface ActivityRescheduleModalProps {
   activity: Activity | null;

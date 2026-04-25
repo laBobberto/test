@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityFormData } from '../types';
+import type { ActivityFormData } from '../types';
 
 interface ActivityCreateFormProps {
   isOpen: boolean;
@@ -27,7 +27,6 @@ export default function ActivityCreateForm({
     e.preventDefault();
     onCreate(formData);
     onClose();
-    // Reset form
     setFormData({
       title: '',
       description: '',
@@ -39,44 +38,55 @@ export default function ActivityCreateForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold text-white mb-4">Создать новое дело</h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold syne gradient-text">Создать дело</h2>
+          <button
+            onClick={onClose}
+            className="text-2xl hover:scale-110 transition-transform"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
               Название
             </label>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-700 text-white rounded border border-slate-600 focus:border-primary-500 focus:outline-none"
+              className="input"
+              placeholder="Название дела"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
               Описание
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-700 text-white rounded border border-slate-600 focus:border-primary-500 focus:outline-none"
+              className="input resize-none"
+              placeholder="Описание (необязательно)"
               rows={3}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
               Категория
             </label>
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-700 text-white rounded border border-slate-600 focus:border-primary-500 focus:outline-none"
+              className="input"
               required
             >
               <option value="education">Образование</option>
@@ -90,58 +100,58 @@ export default function ActivityCreateForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
                 Начало
               </label>
               <input
                 type="datetime-local"
                 value={formData.start_time}
                 onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-700 text-white rounded border border-slate-600 focus:border-primary-500 focus:outline-none"
+                className="input"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
                 Конец
               </label>
               <input
                 type="datetime-local"
                 value={formData.end_time}
                 onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-700 text-white rounded border border-slate-600 focus:border-primary-500 focus:outline-none"
+                className="input"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
               Место
             </label>
             <input
               type="text"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-700 text-white rounded border border-slate-600 focus:border-primary-500 focus:outline-none"
-              placeholder="Адрес или название места"
+              className="input"
+              placeholder="Место (необязательно)"
             />
           </div>
 
           <div className="flex gap-3 pt-4">
             <button
-              type="submit"
-              className="flex-1 bg-primary-500 text-white py-2 px-4 rounded hover:bg-primary-600 transition"
-            >
-              Создать
-            </button>
-            <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-slate-700 text-white py-2 px-4 rounded hover:bg-slate-600 transition"
+              className="btn-secondary flex-1"
             >
               Отмена
+            </button>
+            <button
+              type="submit"
+              className="btn-primary flex-1"
+            >
+              Создать
             </button>
           </div>
         </form>

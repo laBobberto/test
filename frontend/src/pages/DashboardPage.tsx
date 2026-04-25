@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { planAPI, activitiesAPI } from '../services/api';
-import { useAuthStore, useStatsStore } from '../store';
+import { useStatsStore } from '../store';
 import type { Activity, ActivityFormData } from '../types';
+import Navigation from '../components/Navigation';
 import ActivityCard from '../components/ActivityCard';
 import ActivityEditModal from '../components/ActivityEditModal';
 import ActivityCreateForm from '../components/ActivityCreateForm';
@@ -14,8 +15,7 @@ export default function DashboardPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  
-  // Modal states
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -23,7 +23,6 @@ export default function DashboardPage() {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
   const { stats, setStats } = useStatsStore();
 
   useEffect(() => {
@@ -33,12 +32,8 @@ export default function DashboardPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      
-      // Load daily plan
       const plan = await planAPI.getDailyPlan(selectedDate);
       setActivities(plan.activities);
-
-      // Load stats
       const userStats = await activitiesAPI.getStats();
       setStats(userStats);
     } catch (error) {
@@ -96,11 +91,6 @@ export default function DashboardPage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
   const openEditModal = (activity: Activity) => {
     setSelectedActivity(activity);
     setIsEditModalOpen(true);
@@ -121,179 +111,104 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Загрузка...</div>
+      <div className="min-h-screen flex items-center justify-center brutal-grid">
+        <div className="text-center">
+          <div className="text-5xl mb-4 syne font-bold gradient-text">Загрузка</div>
+          <div className="h-1 w-32 bg-[var(--accent-primary)] mx-auto animate-pulse rounded-full"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-white">LifeBalance SPb</h1>
-              <nav className="hidden md:flex gap-4">
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="text-primary-400 font-medium"
-                >
-                  Главная
-                </button>
-                <button
-                  onClick={() => navigate('/map')}
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  Карта
-                </button>
-                <button
-                  onClick={() => navigate('/chat')}
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  AI Чат
-                </button>
-                <button
-                  onClick={() => navigate('/leaderboard')}
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  Рейтинг
-                </button>
-                <button
-                  onClick={() => navigate('/social')}
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  Друзья
-                </button>
-                <button
-                  onClick={() => navigate('/analytics')}
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  Аналитика
-                </button>
-                <button
-                  onClick={() => navigate('/profile')}
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  Профиль
-                </button>
-              </nav>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-gray-300">{user?.username}</span>
-              <button
-                onClick={handleLogout}
-                className="text-gray-400 hover:text-white transition"
-              >
-                Выход
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen brutal-grid">
+      <Navigation />
 
       <div className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-slate-800 rounded-lg p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Баллы</p>
-                <p className="text-3xl font-bold text-white">
-                  {stats?.total_points || 0}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {[
+            { label: 'Баллы', value: stats?.total_points || 0, icon: '⭐' },
+            { label: 'Стрик', value: stats?.current_streak || 0, icon: '🔥' },
+            { label: 'Выполнено', value: stats?.completed_activities || 0, icon: '✓' },
+            { label: 'Баланс', value: `${stats?.balance_score || 0}%`, icon: '⚖️' }
+          ].map((stat, i) => (
+            <div
+              key={stat.label}
+              className="card card-hover animate-fade-in"
+              style={{ animationDelay: `${i * 0.1}s` }}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                  {stat.label}
                 </p>
+                <span className="text-2xl">{stat.icon}</span>
               </div>
-              <div className="text-4xl">🏆</div>
+              <p className="text-4xl font-bold syne gradient-text">{stat.value}</p>
             </div>
-          </div>
-
-          <div className="bg-slate-800 rounded-lg p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Стрик</p>
-                <p className="text-3xl font-bold text-white">
-                  {stats?.current_streak || 0}
-                </p>
-              </div>
-              <div className="text-4xl">🔥</div>
-            </div>
-          </div>
-
-          <div className="bg-slate-800 rounded-lg p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Выполнено</p>
-                <p className="text-3xl font-bold text-white">
-                  {stats?.completed_activities || 0}
-                </p>
-              </div>
-              <div className="text-4xl">✅</div>
-            </div>
-          </div>
-
-          <div className="bg-slate-800 rounded-lg p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Баланс</p>
-                <p className="text-3xl font-bold text-white">
-                  {stats?.balance_score || 0}%
-                </p>
-              </div>
-              <div className="text-4xl">⚖️</div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Date Selector */}
-        <div className="mb-6">
+        <div className="mb-8 flex items-center gap-4">
+          <label className="font-semibold text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Дата:
+          </label>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 bg-slate-800 text-white rounded border border-slate-600 focus:border-primary-500 focus:outline-none"
+            className="input max-w-xs"
           />
         </div>
 
         {/* Activities List */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-white mb-4">
-            Дела на {new Date(selectedDate).toLocaleDateString('ru-RU', { 
-              day: 'numeric', 
-              month: 'long',
-              year: 'numeric'
-            })}
-          </h2>
+        <div className="space-y-6">
+          <div className="flex items-center gap-6 mb-6">
+            <h2 className="text-3xl font-bold syne gradient-text">
+              {new Date(selectedDate).toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long'
+              })}
+            </h2>
+            <div className="flex-1 h-px bg-[var(--border-primary)]"></div>
+          </div>
 
           {activities.length === 0 ? (
-            <div className="bg-slate-800 rounded-lg p-8 text-center">
-              <p className="text-gray-400 mb-4">Нет дел на этот день</p>
+            <div className="card text-center py-16">
+              <div className="text-5xl mb-6 opacity-30">📋</div>
+              <p className="text-xl font-semibold mb-6" style={{ color: 'var(--text-secondary)' }}>
+                Нет дел на этот день
+              </p>
               <button
                 onClick={() => setIsCreateModalOpen(true)}
-                className="bg-primary-500 text-white px-6 py-2 rounded hover:bg-primary-600 transition"
+                className="btn-primary"
               >
                 Создать первое дело
               </button>
             </div>
           ) : (
-            activities.map((activity) => (
-              <ActivityCard
+            activities.map((activity, i) => (
+              <div
                 key={activity.id}
-                activity={activity}
-                onEdit={openEditModal}
-                onDelete={openDeleteModal}
-                onComplete={handleCompleteActivity}
-                onReschedule={openRescheduleModal}
-              />
+                className="animate-fade-in"
+                style={{ animationDelay: `${i * 0.05}s` }}
+              >
+                <ActivityCard
+                  activity={activity}
+                  onEdit={openEditModal}
+                  onDelete={openDeleteModal}
+                  onComplete={handleCompleteActivity}
+                  onReschedule={openRescheduleModal}
+                />
+              </div>
             ))
           )}
         </div>
       </div>
 
-      {/* Floating Action Button */}
       <FloatingActionButton onClick={() => setIsCreateModalOpen(true)} />
 
-      {/* Modals */}
       <ActivityCreateForm
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}

@@ -4,13 +4,13 @@ import { userAPI } from '../services/api';
 import { usePrioritiesStore } from '../store';
 import type { Priority, PriorityCategory } from '../types';
 
-const categories: { id: PriorityCategory; title: string; icon: string; color: string }[] = [
-  { id: 'education', title: 'Образование', icon: '📚', color: 'bg-blue-500' },
-  { id: 'career', title: 'Карьера', icon: '💼', color: 'bg-purple-500' },
-  { id: 'health', title: 'Здоровье', icon: '💪', color: 'bg-green-500' },
-  { id: 'leisure', title: 'Досуг', icon: '🎭', color: 'bg-pink-500' },
-  { id: 'social', title: 'Социализация', icon: '👥', color: 'bg-yellow-500' },
-  { id: 'household', title: 'Быт', icon: '🏠', color: 'bg-orange-500' },
+const categories: { id: PriorityCategory; title: string }[] = [
+  { id: 'education', title: 'Образование' },
+  { id: 'career', title: 'Карьера' },
+  { id: 'health', title: 'Здоровье' },
+  { id: 'leisure', title: 'Досуг' },
+  { id: 'social', title: 'Социализация' },
+  { id: 'household', title: 'Быт' },
 ];
 
 export default function PrioritiesPage() {
@@ -74,7 +74,6 @@ export default function PrioritiesPage() {
       normalized[key as PriorityCategory] = Math.round((value / currentTotal) * 100);
     });
 
-    // Adjust for rounding errors
     const newTotal = Object.values(normalized).reduce((sum, val) => sum + val, 0);
     if (newTotal !== 100) {
       const diff = 100 - newTotal;
@@ -86,85 +85,95 @@ export default function PrioritiesPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-      <div className="card max-w-3xl w-full animate-fade-in">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Настройте приоритеты
-          </h1>
-          <p className="text-gray-400">
-            Распределите важность между категориями
-          </p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center p-4 brutal-grid">
+      <div className="max-w-3xl w-full animate-fade-in">
+        <div className="card">
+          <div className="mb-10">
+            <h1 className="text-4xl font-bold syne mb-3 gradient-text">
+              Настройте приоритеты
+            </h1>
+            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+              Распределите важность между категориями
+            </p>
+          </div>
 
-        <div className="space-y-6 mb-6">
-          {categories.map((category) => (
-            <div key={category.id} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{category.icon}</span>
-                  <span className="text-white font-medium">{category.title}</span>
+          <div className="space-y-6 mb-8">
+            {categories.map((category) => (
+              <div key={category.id} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-semibold">
+                    {category.title}
+                  </span>
+                  <span className="text-3xl font-bold syne gradient-text">
+                    {priorities[category.id]}%
+                  </span>
                 </div>
-                <span className="text-2xl font-bold text-white">
-                  {priorities[category.id]}%
-                </span>
+                <div className="relative">
+                  <div className="h-3 bg-[var(--bg-tertiary)] rounded-full overflow-hidden border border-[var(--border-primary)]">
+                    <div
+                      className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] transition-all duration-300"
+                      style={{ width: `${priorities[category.id]}%` }}
+                    ></div>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={priorities[category.id]}
+                    onChange={(e) =>
+                      handleSliderChange(category.id, parseInt(e.target.value))
+                    }
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                </div>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={priorities[category.id]}
-                onChange={(e) =>
-                  handleSliderChange(category.id, parseInt(e.target.value))
-                }
-                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
-                style={{
-                  background: `linear-gradient(to right, ${category.color.replace('bg-', 'rgb(var(--tw-')} 0%, ${category.color.replace('bg-', 'rgb(var(--tw-')} ${priorities[category.id]}%, rgb(51, 65, 85) ${priorities[category.id]}%, rgb(51, 65, 85) 100%)`,
-                }}
-              />
+            ))}
+          </div>
+
+          <div className="card bg-[var(--bg-tertiary)] p-6 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-lg font-semibold">
+                Общая сумма:
+              </span>
+              <span
+                className={`text-4xl font-bold syne ${
+                  Math.abs(total - 100) < 0.01
+                    ? 'gradient-text'
+                    : 'text-[var(--text-tertiary)]'
+                }`}
+              >
+                {total}%
+              </span>
             </div>
-          ))}
-        </div>
-
-        <div className="bg-slate-700/50 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-300">Общая сумма:</span>
-            <span
-              className={`text-2xl font-bold ${
-                Math.abs(total - 100) < 0.01
-                  ? 'text-green-400'
-                  : 'text-red-400'
-              }`}
-            >
-              {total}%
-            </span>
+            {Math.abs(total - 100) > 0.01 && (
+              <button
+                onClick={normalize}
+                className="btn-secondary w-full text-sm"
+              >
+                Нормализовать до 100%
+              </button>
+            )}
           </div>
-          {Math.abs(total - 100) > 0.01 && (
-            <button
-              onClick={normalize}
-              className="mt-2 text-sm text-primary-400 hover:text-primary-300"
-            >
-              Нормализовать до 100%
-            </button>
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-6">
+              <p className="text-red-500 text-sm font-medium">{error}</p>
+            </div>
           )}
-        </div>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-lg mb-4">
-            {error}
+          <button
+            onClick={handleSave}
+            disabled={loading || Math.abs(total - 100) > 0.01}
+            className="btn-primary w-full text-base font-semibold mb-6"
+          >
+            {loading ? 'Сохранение...' : 'Сохранить и продолжить'}
+          </button>
+
+          <div className="text-center pt-6 border-t border-[var(--border-primary)]">
+            <p className="mono text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              Шаг 2 / 2
+            </p>
           </div>
-        )}
-
-        <button
-          onClick={handleSave}
-          disabled={loading || Math.abs(total - 100) > 0.01}
-          className="btn-primary w-full"
-        >
-          {loading ? 'Сохранение...' : 'Сохранить и продолжить'}
-        </button>
-
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-400">Шаг 2 из 2</p>
         </div>
       </div>
     </div>

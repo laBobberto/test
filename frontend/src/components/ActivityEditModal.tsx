@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Activity, ActivityFormData } from '../types';
+import type { Activity, ActivityFormData } from '../types';
 
 interface ActivityEditModalProps {
   activity: Activity | null;

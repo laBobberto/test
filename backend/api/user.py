@@ -27,15 +27,16 @@ async def get_current_user(authorization: str = Header(None), db: Session = Depe
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
-    
-    user = db.query(User).filter(User.id == payload.get("user_id")).first()
-    
+
+    user_id = payload.get("user_id") or payload.get("sub")
+    user = db.query(User).filter(User.id == user_id).first()
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
+
     return user
 
 @router.get("/profile", response_model=UserResponse)
