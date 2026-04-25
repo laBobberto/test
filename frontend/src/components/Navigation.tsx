@@ -46,10 +46,6 @@ export default function Navigation() {
     { name: 'Карта', path: '/map' },
     { name: 'Чат', path: '/chat' },
     { name: 'Расписание', path: '/schedule' },
-    { name: 'Челленджи', path: '/challenges' },
-    { name: 'Квесты', path: '/quests' },
-    { name: 'Магазин', path: '/store' },
-    { name: 'Покупки', path: '/purchases' },
     { name: 'Блог', path: '/blog' },
     { name: 'Попутчики', path: '/companions' },
     { name: 'Рейтинг', path: '/leaderboard' },
@@ -63,7 +59,7 @@ export default function Navigation() {
     <header className="glass sticky top-0 z-40 backdrop-blur-xl">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold syne gradient-text">LifeBalance</h1>
+          <h1 className="text-2xl font-bold syne gradient-text">В потоке</h1>
 
           <nav className="hidden md:flex gap-2">
             {navItems.map(item => (

@@ -78,7 +78,7 @@ export default function AuthPage() {
         <div className="card">
           <div className="mb-10">
             <h1 className="text-5xl font-bold syne mb-3 gradient-text">
-              LifeBalance
+              В потоке
             </h1>
             <p className="text-lg font-medium" style={{ color: 'var(--text-secondary)' }}>
               Санкт-Петербург
