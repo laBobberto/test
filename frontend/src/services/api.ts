@@ -168,3 +168,46 @@ export const activitiesAPI = {
 };
 
 export default api;
+
+// Maps API
+export const mapsAPI = {
+  geocode: async (address: string) => {
+    const response = await api.get('/api/maps/geocode', {
+      params: { address }
+    });
+    return response.data;
+  },
+
+  reverseGeocode: async (lat: number, lon: number) => {
+    const response = await api.get('/api/maps/reverse-geocode', {
+      params: { lat, lon }
+    });
+    return response.data;
+  },
+
+  getRoute: async (
+    fromLat: number,
+    fromLon: number,
+    toLat: number,
+    toLon: number,
+    mode: 'auto' | 'pedestrian' | 'transit' = 'auto'
+  ) => {
+    const response = await api.get('/api/maps/route', {
+      params: {
+        from_lat: fromLat,
+        from_lon: fromLon,
+        to_lat: toLat,
+        to_lon: toLon,
+        mode
+      }
+    });
+    return response.data;
+  },
+
+  getTraffic: async (city: string = 'Saint Petersburg') => {
+    const response = await api.get('/api/maps/traffic', {
+      params: { city }
+    });
+    return response.data;
+  },
+};
