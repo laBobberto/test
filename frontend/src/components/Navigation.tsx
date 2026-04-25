@@ -1,11 +1,13 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store';
+import { useOnboardingStore } from '../store/onboardingStore';
 import { useState, useEffect } from 'react';
 
 export default function Navigation() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
+  const { startTour } = useOnboardingStore();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
@@ -25,12 +27,34 @@ export default function Navigation() {
     navigate('/');
   };
 
+  const handleStartTour = () => {
+    const tourMap: Record<string, 'dashboard' | 'map' | 'social' | 'profile'> = {
+      '/dashboard': 'dashboard',
+      '/map': 'map',
+      '/friends': 'social',
+      '/groups': 'social',
+      '/profile': 'profile',
+    };
+    const currentTour = tourMap[location.pathname];
+    if (currentTour) {
+      startTour(currentTour);
+    }
+  };
+
   const navItems = [
     { name: 'Главная', path: '/dashboard' },
     { name: 'Карта', path: '/map' },
     { name: 'Чат', path: '/chat' },
+    { name: 'Расписание', path: '/schedule' },
+    { name: 'Челленджи', path: '/challenges' },
+    { name: 'Квесты', path: '/quests' },
+    { name: 'Магазин', path: '/store' },
+    { name: 'Покупки', path: '/purchases' },
+    { name: 'Блог', path: '/blog' },
+    { name: 'Попутчики', path: '/companions' },
     { name: 'Рейтинг', path: '/leaderboard' },
-    { name: 'Друзья', path: '/social' },
+    { name: 'Группы', path: '/groups' },
+    { name: 'Друзья', path: '/friends' },
     { name: 'Аналитика', path: '/analytics' },
     { name: 'Профиль', path: '/profile' }
   ];
@@ -58,6 +82,13 @@ export default function Navigation() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={handleStartTour}
+              className="p-2 glass rounded-lg hover:scale-110 transition-all duration-300"
+              title="Показать подсказки"
+            >
+              <span className="text-lg">❓</span>
+            </button>
             <button
               onClick={toggleTheme}
               className="p-2 glass rounded-lg hover:scale-110 transition-all duration-300"

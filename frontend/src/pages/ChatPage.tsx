@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { planAPI } from '../services/api';
 import Navigation from '../components/Navigation';
-import type { ChatMessage } from '../types';
+import type { AIChatMessage } from '../types';
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<AIChatMessage[]>([
     {
       role: 'assistant',
       content: 'Привет! Я твой персональный ассистент LifeBalance SPb. Чем могу помочь?',
@@ -25,7 +25,7 @@ export default function ChatPage() {
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
-    const userMessage: ChatMessage = {
+    const userMessage: AIChatMessage = {
       role: 'user',
       content: input,
     };
@@ -37,7 +37,7 @@ export default function ChatPage() {
     try {
       const response = await planAPI.chat(input);
 
-      const assistantMessage: ChatMessage = {
+      const assistantMessage: AIChatMessage = {
         role: 'assistant',
         content: response.response,
       };
@@ -45,7 +45,7 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
-      const errorMessage: ChatMessage = {
+      const errorMessage: AIChatMessage = {
         role: 'assistant',
         content: 'Извините, произошла ошибка. Попробуйте еще раз.',
       };

@@ -10,8 +10,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [homeAddress, setHomeAddress] = useState('');
   const [maxTravelTime, setMaxTravelTime] = useState(30);
-  const [editingLocation, setEditingLocation] = useState(false);
-  const [savingLocation, setSavingLocation] = useState(false);
+  const [editingSettings, setEditingSettings] = useState(false);
+  const [settingsError, setSettingsError] = useState('');
+  const [settingsSuccess, setSettingsSuccess] = useState('');
 
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -45,16 +46,19 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSaveLocation = async () => {
+  const handleSaveSettings = async () => {
     try {
-      setSavingLocation(true);
+      setSettingsError('');
+      setSettingsSuccess('');
+
       await userAPI.updateLocationPreferences(homeAddress || undefined, maxTravelTime);
-      setEditingLocation(false);
-    } catch (error) {
-      console.error('Error saving location preferences:', error);
-      alert('Ошибка при сохранении настроек');
-    } finally {
-      setSavingLocation(false);
+
+      setSettingsSuccess('Настройки успешно сохранены');
+      setEditingSettings(false);
+
+      setTimeout(() => setSettingsSuccess(''), 3000);
+    } catch (error: any) {
+      setSettingsError(error.response?.data?.detail || 'Не удалось сохранить настройки');
     }
   };
 
@@ -125,83 +129,6 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* Location Preferences */}
-        <div className="card mb-8">
-          <h2 className="text-2xl font-bold syne gradient-text mb-6">Местоположение</h2>
-
-          {!editingLocation ? (
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  Домашний адрес
-                </p>
-                <p className="text-lg">
-                  {homeAddress || <span style={{ color: 'var(--text-secondary)' }}>Не указан</span>}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  Максимальное время в пути
-                </p>
-                <p className="text-lg">{maxTravelTime} минут</p>
-              </div>
-              <button
-                onClick={() => setEditingLocation(true)}
-                className="btn-secondary w-full"
-              >
-                Изменить
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Домашний адрес
-                </label>
-                <input
-                  type="text"
-                  value={homeAddress}
-                  onChange={(e) => setHomeAddress(e.target.value)}
-                  placeholder="Например: Невский проспект, 1"
-                  className="w-full px-4 py-3 bg-[var(--bg-tertiary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Максимальное время в пути (минуты)
-                </label>
-                <input
-                  type="number"
-                  value={maxTravelTime}
-                  onChange={(e) => setMaxTravelTime(Number(e.target.value))}
-                  min="0"
-                  max="180"
-                  className="w-full px-4 py-3 bg-[var(--bg-tertiary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleSaveLocation}
-                  disabled={savingLocation}
-                  className="btn-primary flex-1"
-                >
-                  {savingLocation ? 'Сохранение...' : 'Сохранить'}
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingLocation(false);
-                    loadData();
-                  }}
-                  disabled={savingLocation}
-                  className="btn-secondary flex-1"
-                >
-                  Отмена
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Priorities */}
         <div className="card mb-8">
           <h2 className="text-2xl font-bold syne gradient-text mb-6">Приоритеты</h2>
@@ -236,6 +163,89 @@ export default function ProfilePage() {
           </button>
         </div>
 
+        {/* Settings */}
+        <div className="card mb-8">
+          <h2 className="text-2xl font-bold syne gradient-text mb-6">Настройки</h2>
+
+          {settingsError && (
+            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-4">
+              <p className="text-red-500 text-sm font-medium">{settingsError}</p>
+            </div>
+          )}
+
+          {settingsSuccess && (
+            <div className="bg-green-500/10 border border-green-500/50 rounded-xl p-4 mb-4">
+              <p className="text-green-500 text-sm font-medium">{settingsSuccess}</p>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Домашний адрес
+              </label>
+              <input
+                type="text"
+                value={homeAddress}
+                onChange={(e) => setHomeAddress(e.target.value)}
+                disabled={!editingSettings}
+                className="input w-full"
+                placeholder="Например: Санкт-Петербург, ул. Ленина, д. 1"
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Используется для расчета времени в пути до мероприятий
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Время на дорогу (минут)
+              </label>
+              <input
+                type="number"
+                value={maxTravelTime}
+                onChange={(e) => setMaxTravelTime(parseInt(e.target.value) || 0)}
+                disabled={!editingSettings}
+                className="input w-full"
+                min="0"
+                max="180"
+              />
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Среднее время, которое вы готовы потратить на дорогу до мероприятия
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            {editingSettings ? (
+              <>
+                <button
+                  onClick={handleSaveSettings}
+                  className="btn-primary flex-1"
+                >
+                  Сохранить
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingSettings(false);
+                    loadData();
+                  }}
+                  className="btn-secondary flex-1"
+                >
+                  Отмена
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setEditingSettings(true)}
+                className="btn-secondary w-full"
+              >
+                Редактировать настройки
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Achievements */}
         <div className="card">
           <h2 className="text-2xl font-bold syne gradient-text mb-6">Достижения</h2>
@@ -250,7 +260,7 @@ export default function ProfilePage() {
                   <div className="flex items-start gap-4">
                     <span className="text-3xl">{achievement.icon}</span>
                     <div>
-                      <h3 className="font-bold mb-1">{achievement.title}</h3>
+                      <h3 className="font-bold mb-1">{achievement.name}</h3>
                       <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                         {achievement.description}
                       </p>

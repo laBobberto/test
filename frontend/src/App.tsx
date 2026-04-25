@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store';
+import { ToastProvider } from './components/Toast';
 
 import AuthPage from './pages/AuthPage';
 import OnboardingPage from './pages/OnboardingPage';
@@ -12,6 +13,16 @@ import ProfilePage from './pages/ProfilePage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import SocialPage from './pages/SocialPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import GroupsPage from './pages/GroupsPage';
+import FriendsPage from './pages/FriendsPage';
+import SchedulePage from './pages/SchedulePage';
+import ChallengesPage from './pages/ChallengesPage';
+import QuestsPage from './pages/QuestsPage';
+import StorePage from './pages/StorePage';
+import MyPurchasesPage from './pages/MyPurchasesPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
+import MyCompanionsPage from './pages/MyCompanionsPage';
 
 const queryClient = new QueryClient();
 
@@ -28,6 +39,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <ToastProvider />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<AuthPage />} />
@@ -93,6 +105,96 @@ function App() {
             element={
               <ProtectedRoute>
                 <AnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/groups"
+            element={
+              <ProtectedRoute>
+                <GroupsPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/friends"
+            element={
+              <ProtectedRoute>
+                <FriendsPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/schedule"
+            element={
+              <ProtectedRoute>
+                <SchedulePage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/challenges"
+            element={
+              <ProtectedRoute>
+                <ChallengesPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/quests"
+            element={
+              <ProtectedRoute>
+                <QuestsPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/store"
+            element={
+              <ProtectedRoute>
+                <StorePage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/purchases"
+            element={
+              <ProtectedRoute>
+                <MyPurchasesPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/blog"
+            element={
+              <ProtectedRoute>
+                <BlogPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/blog/:slug"
+            element={
+              <ProtectedRoute>
+                <BlogPostPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/companions"
+            element={
+              <ProtectedRoute>
+                <MyCompanionsPage />
               </ProtectedRoute>
             }
           />

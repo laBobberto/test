@@ -7,7 +7,24 @@ import type {
   Achievement, 
   UserStats, 
   DailyPlan,
-  AuthResponse 
+  AuthResponse,
+  Group,
+  GroupMember,
+  Friend,
+  LeaderboardEntry,
+  Chat,
+  ChatMessage,
+  Challenge,
+  Quest,
+  VirtualCurrency,
+  CurrencyTransaction,
+  StoreItem,
+  Purchase,
+  BlogPost,
+  BlogCategory,
+  EventCompanion,
+  CompanionRequest,
+  EventGroup
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -58,6 +75,11 @@ export const authAPI = {
 export const userAPI = {
   getProfile: async () => {
     const response = await api.get<User>('/api/user/profile');
+    return response.data;
+  },
+
+  updateProfile: async (data: any) => {
+    const response = await api.put('/api/user/profile', data);
     return response.data;
   },
 
@@ -222,5 +244,349 @@ export const mapsAPI = {
       params: { city }
     });
     return response.data;
+  },
+};
+
+// Groups API
+export const groupsAPI = {
+  createGroup: async (name: string, description?: string) => {
+    const response = await api.post<Group>('/api/groups/', {
+      name,
+      description,
+    });
+    return response.data;
+  },
+
+  getGroups: async () => {
+    const response = await api.get<Group[]>('/api/groups/');
+    return response.data;
+  },
+
+  getGroup: async (id: number) => {
+    const response = await api.get<Group>(`/api/groups/${id}`);
+    return response.data;
+  },
+
+  joinGroup: async (id: number) => {
+    const response = await api.post(`/api/groups/${id}/join`);
+    return response.data;
+  },
+
+  leaveGroup: async (id: number) => {
+    await api.post(`/api/groups/${id}/leave`);
+  },
+
+  getMembers: async (id: number) => {
+    const response = await api.get<GroupMember[]>(`/api/groups/${id}/members`);
+    return response.data;
+  },
+
+  deleteGroup: async (id: number) => {
+    await api.delete(`/api/groups/${id}`);
+  },
+};
+
+// Friends API
+export const friendsAPI = {
+  sendRequest: async (friendId: number) => {
+    const response = await api.post<Friend>('/api/friends/request', {
+      friend_id: friendId,
+    });
+    return response.data;
+  },
+
+  getFriends: async () => {
+    const response = await api.get<Friend[]>('/api/friends/');
+    return response.data;
+  },
+
+  getPendingRequests: async () => {
+    const response = await api.get<Friend[]>('/api/friends/pending');
+    return response.data;
+  },
+
+  acceptRequest: async (requestId: number) => {
+    const response = await api.post(`/api/friends/${requestId}/accept`);
+    return response.data;
+  },
+
+  rejectRequest: async (requestId: number) => {
+    await api.post(`/api/friends/${requestId}/reject`);
+  },
+
+  removeFriend: async (friendId: number) => {
+    await api.delete(`/api/friends/${friendId}`);
+  },
+
+  searchUsers: async (query: string) => {
+    const response = await api.get<User[]>('/api/friends/search', {
+      params: { query },
+    });
+    return response.data;
+  },
+};
+
+// Leaderboard API
+export const leaderboardAPI = {
+  getGlobal: async (limit: number = 50) => {
+    const response = await api.get<LeaderboardEntry[]>('/api/leaderboard/global', {
+      params: { limit },
+    });
+    return response.data;
+  },
+
+  getFriends: async () => {
+    const response = await api.get<LeaderboardEntry[]>('/api/leaderboard/friends');
+    return response.data;
+  },
+
+  getGroup: async (groupId: number) => {
+    const response = await api.get<LeaderboardEntry[]>(`/api/leaderboard/group/${groupId}`);
+    return response.data;
+  },
+};
+
+// Schedule API
+export const scheduleAPI = {
+  parseScheduleWithAI: async (text: string) => {
+    const response = await api.post('/api/schedule/parse', { text });
+    return response.data;
+  },
+
+  importFromLETI: async (studentId: string, groupNumber: string) => {
+    const response = await api.post('/api/schedule/import-leti', {
+      student_id: studentId,
+      group_number: groupNumber,
+    });
+    return response.data;
+  },
+
+  getSchedule: async (startDate?: string, endDate?: string) => {
+    const response = await api.get('/api/schedule/', {
+      params: { start_date: startDate, end_date: endDate },
+    });
+    return response.data;
+  },
+};
+
+// Chat API
+export const chatAPI = {
+  getChats: async () => {
+    const response = await api.get<Chat[]>('/api/chats/');
+    return response.data;
+  },
+
+  getGroupChat: async (groupId: number) => {
+    const response = await api.get<Chat>(`/api/chats/group/${groupId}`);
+    return response.data;
+  },
+
+  getDirectChat: async (friendId: number) => {
+    const response = await api.get<Chat>(`/api/chats/direct/${friendId}`);
+    return response.data;
+  },
+
+  getMessages: async (chatId: number, limit: number = 50, offset: number = 0) => {
+    const response = await api.get<ChatMessage[]>(`/api/chats/${chatId}/messages`, {
+      params: { limit, offset },
+    });
+    return response.data;
+  },
+
+  sendMessage: async (chatId: number, content: string) => {
+    const response = await api.post<ChatMessage>(`/api/chats/${chatId}/messages`, {
+      content,
+    });
+    return response.data;
+  },
+
+  markAsRead: async (chatId: number) => {
+    await api.post(`/api/chats/${chatId}/read`);
+  },
+};
+
+// Challenges API
+export const challengesAPI = {
+  getChallenges: async (type?: string) => {
+    const response = await api.get<Challenge[]>('/api/challenges/', {
+      params: { type },
+    });
+    return response.data;
+  },
+
+  getChallenge: async (id: number) => {
+    const response = await api.get<Challenge>(`/api/challenges/${id}`);
+    return response.data;
+  },
+
+  acceptChallenge: async (id: number) => {
+    const response = await api.post<Challenge>(`/api/challenges/${id}/accept`);
+    return response.data;
+  },
+
+  completeChallenge: async (id: number) => {
+    const response = await api.post<Challenge>(`/api/challenges/${id}/complete`);
+    return response.data;
+  },
+
+  getActiveChallenges: async () => {
+    const response = await api.get<Challenge[]>('/api/challenges/active');
+    return response.data;
+  },
+};
+
+// Quests API
+export const questsAPI = {
+  getQuests: async () => {
+    const response = await api.get<Quest[]>('/api/quests/');
+    return response.data;
+  },
+
+  getQuest: async (id: number) => {
+    const response = await api.get<Quest>(`/api/quests/${id}`);
+    return response.data;
+  },
+
+  startQuest: async (id: number) => {
+    const response = await api.post<Quest>(`/api/quests/${id}/start`);
+    return response.data;
+  },
+
+  completeQuestStep: async (questId: number, stepId: number) => {
+    const response = await api.post<Quest>(`/api/quests/${questId}/steps/${stepId}/complete`);
+    return response.data;
+  },
+};
+
+// Currency API
+export const currencyAPI = {
+  getBalance: async () => {
+    const response = await api.get<VirtualCurrency>('/api/currency/balance');
+    return response.data;
+  },
+
+  getTransactions: async (limit: number = 50) => {
+    const response = await api.get<CurrencyTransaction[]>('/api/currency/transactions', {
+      params: { limit },
+    });
+    return response.data;
+  },
+
+  getStoreItems: async (category?: string) => {
+    const response = await api.get<StoreItem[]>('/api/store/items', {
+      params: { category },
+    });
+    return response.data;
+  },
+
+  purchaseItem: async (itemId: number) => {
+    const response = await api.post<Purchase>('/api/store/purchase', { item_id: itemId });
+    return response.data;
+  },
+
+  getPurchases: async () => {
+    const response = await api.get<Purchase[]>('/api/store/purchases');
+    return response.data;
+  },
+
+  useItem: async (purchaseId: number) => {
+    const response = await api.post<Purchase>(`/api/store/purchases/${purchaseId}/use`);
+    return response.data;
+  },
+};
+
+// Blog API
+export const blogAPI = {
+  getPosts: async (params?: { category?: string; tag?: string; limit?: number; offset?: number }) => {
+    const response = await api.get<BlogPost[]>('/api/blog/posts', { params });
+    return response.data;
+  },
+
+  getPost: async (slug: string) => {
+    const response = await api.get<BlogPost>(`/api/blog/posts/${slug}`);
+    return response.data;
+  },
+
+  likePost: async (id: number) => {
+    const response = await api.post<BlogPost>(`/api/blog/posts/${id}/like`);
+    return response.data;
+  },
+
+  getCategories: async () => {
+    const response = await api.get<BlogCategory[]>('/api/blog/categories');
+    return response.data;
+  },
+
+  getTrendingPosts: async (limit: number = 5) => {
+    const response = await api.get<BlogPost[]>('/api/blog/trending', { params: { limit } });
+    return response.data;
+  },
+
+  searchPosts: async (query: string) => {
+    const response = await api.get<BlogPost[]>('/api/blog/search', { params: { q: query } });
+    return response.data;
+  },
+};
+
+// Event Companions API
+export const companionsAPI = {
+  getCompanionPosts: async (eventId: number) => {
+    const response = await api.get<EventCompanion[]>(`/api/events/${eventId}/companions`);
+    return response.data;
+  },
+
+  createCompanionPost: async (data: { event_id: number; message: string; max_companions: number }) => {
+    const response = await api.post<EventCompanion>('/api/companions/posts', data);
+    return response.data;
+  },
+
+  deleteCompanionPost: async (id: number) => {
+    await api.delete(`/api/companions/posts/${id}`);
+  },
+
+  sendCompanionRequest: async (postId: number, message: string) => {
+    const response = await api.post<CompanionRequest>(`/api/companions/posts/${postId}/requests`, {
+      message,
+    });
+    return response.data;
+  },
+
+  getMyRequests: async () => {
+    const response = await api.get<CompanionRequest[]>('/api/companions/requests');
+    return response.data;
+  },
+
+  acceptRequest: async (requestId: number) => {
+    const response = await api.post<CompanionRequest>(`/api/companions/requests/${requestId}/accept`);
+    return response.data;
+  },
+
+  rejectRequest: async (requestId: number) => {
+    const response = await api.post<CompanionRequest>(`/api/companions/requests/${requestId}/reject`);
+    return response.data;
+  },
+
+  getEventGroups: async (eventId: number) => {
+    const response = await api.get<EventGroup[]>(`/api/events/${eventId}/groups`);
+    return response.data;
+  },
+
+  createEventGroup: async (data: {
+    event_id: number;
+    name: string;
+    description: string;
+    max_members: number;
+  }) => {
+    const response = await api.post<EventGroup>('/api/event-groups', data);
+    return response.data;
+  },
+
+  joinEventGroup: async (groupId: number) => {
+    const response = await api.post<EventGroup>(`/api/event-groups/${groupId}/join`);
+    return response.data;
+  },
+
+  leaveEventGroup: async (groupId: number) => {
+    await api.post(`/api/event-groups/${groupId}/leave`);
   },
 };

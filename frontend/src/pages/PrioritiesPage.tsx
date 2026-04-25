@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
 import { usePrioritiesStore } from '../store';
@@ -15,12 +15,12 @@ const categories: { id: PriorityCategory; title: string }[] = [
 
 export default function PrioritiesPage() {
   const [priorities, setPriorities] = useState<Record<PriorityCategory, number>>({
-    education: 20,
-    career: 15,
-    health: 20,
-    leisure: 20,
-    social: 15,
-    household: 10,
+    education: 3,
+    career: 3,
+    health: 3,
+    leisure: 3,
+    social: 3,
+    household: 3,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -28,31 +28,33 @@ export default function PrioritiesPage() {
   const navigate = useNavigate();
   const { setPriorities: setStorePriorities } = usePrioritiesStore();
 
-  const total = Object.values(priorities).reduce((sum, val) => sum + val, 0);
-
-  const handleSliderChange = (category: PriorityCategory, value: number) => {
+  const handleStarClick = (category: PriorityCategory, stars: number) => {
     setPriorities((prev) => ({
       ...prev,
-      [category]: value,
+      [category]: stars,
     }));
   };
 
   const handleSave = async () => {
-    if (Math.abs(total - 100) > 0.01) {
-      setError('Сумма приоритетов должна быть равна 100%');
-      return;
-    }
-
     setLoading(true);
     setError('');
 
     try {
+      // Конвертируем звезды (0-5) в проценты для бэкенда
+      const totalStars = Object.values(priorities).reduce((sum, val) => sum + val, 0);
       const prioritiesArray: Priority[] = Object.entries(priorities).map(
-        ([category, value]) => ({
+        ([category, stars]) => ({
           category,
-          value,
+          value: totalStars > 0 ? Math.round((stars / totalStars) * 100) : 0,
         })
       );
+
+      // Нормализуем до 100%
+      const currentTotal = prioritiesArray.reduce((sum, p) => sum + p.value, 0);
+      if (currentTotal !== 100 && currentTotal > 0) {
+        const diff = 100 - currentTotal;
+        prioritiesArray[0].value += diff;
+      }
 
       await userAPI.updatePriorities(prioritiesArray);
       setStorePriorities(prioritiesArray);
@@ -65,25 +67,6 @@ export default function PrioritiesPage() {
     }
   };
 
-  const normalize = () => {
-    const currentTotal = Object.values(priorities).reduce((sum, val) => sum + val, 0);
-    if (currentTotal === 0) return;
-
-    const normalized: Record<PriorityCategory, number> = {} as any;
-    Object.entries(priorities).forEach(([key, value]) => {
-      normalized[key as PriorityCategory] = Math.round((value / currentTotal) * 100);
-    });
-
-    const newTotal = Object.values(normalized).reduce((sum, val) => sum + val, 0);
-    if (newTotal !== 100) {
-      const diff = 100 - newTotal;
-      const firstKey = Object.keys(normalized)[0] as PriorityCategory;
-      normalized[firstKey] += diff;
-    }
-
-    setPriorities(normalized);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4 brutal-grid">
       <div className="max-w-3xl w-full animate-fade-in">
@@ -93,66 +76,51 @@ export default function PrioritiesPage() {
               Настройте приоритеты
             </h1>
             <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-              Распределите важность между категориями
+              Оцените важность каждой категории от 1 до 5 звезд
             </p>
           </div>
 
           <div className="space-y-6 mb-8">
             {categories.map((category) => (
               <div key={category.id} className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-lg font-semibold">
                     {category.title}
                   </span>
-                  <span className="text-3xl font-bold syne gradient-text">
-                    {priorities[category.id]}%
-                  </span>
                 </div>
-                <div className="relative">
-                  <div className="h-3 bg-[var(--bg-tertiary)] rounded-full overflow-hidden border border-[var(--border-primary)]">
-                    <div
-                      className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] transition-all duration-300"
-                      style={{ width: `${priorities[category.id]}%` }}
-                    ></div>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={priorities[category.id]}
-                    onChange={(e) =>
-                      handleSliderChange(category.id, parseInt(e.target.value))
-                    }
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => handleStarClick(category.id, star)}
+                      className="transition-all duration-200 hover:scale-110 focus:outline-none"
+                      type="button"
+                    >
+                      <svg
+                        className={`w-10 h-10 ${
+                          star <= priorities[category.id]
+                            ? 'text-yellow-400 fill-yellow-400'
+                            : 'text-gray-600 fill-none'
+                        }`}
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                        />
+                      </svg>
+                    </button>
+                  ))}
+                  <span className="ml-2 text-sm text-[var(--text-secondary)]">
+                    ({priorities[category.id]} / 5)
+                  </span>
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="card bg-[var(--bg-tertiary)] p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-semibold">
-                Общая сумма:
-              </span>
-              <span
-                className={`text-4xl font-bold syne ${
-                  Math.abs(total - 100) < 0.01
-                    ? 'gradient-text'
-                    : 'text-[var(--text-tertiary)]'
-                }`}
-              >
-                {total}%
-              </span>
-            </div>
-            {Math.abs(total - 100) > 0.01 && (
-              <button
-                onClick={normalize}
-                className="btn-secondary w-full text-sm"
-              >
-                Нормализовать до 100%
-              </button>
-            )}
           </div>
 
           {error && (
@@ -163,7 +131,7 @@ export default function PrioritiesPage() {
 
           <button
             onClick={handleSave}
-            disabled={loading || Math.abs(total - 100) > 0.01}
+            disabled={loading}
             className="btn-primary w-full text-base font-semibold mb-6"
           >
             {loading ? 'Сохранение...' : 'Сохранить и продолжить'}

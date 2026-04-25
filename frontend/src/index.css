@@ -168,6 +168,15 @@ body {
   }
 }
 
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out;
 }
@@ -187,6 +196,27 @@ body {
     transparent 0%,
     var(--accent-primary) 50%,
     transparent 100%
+  );
+  background-size: 1000px 100%;
+}
+
+.skeleton-shimmer {
+  animation: skeleton-shimmer 2s infinite linear;
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 0%,
+    var(--border-primary) 50%,
+    var(--bg-tertiary) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+[data-theme="dark"] .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #2D1B4E 0%,
+    #3D2B5E 50%,
+    #2D1B4E 100%
   );
   background-size: 1000px 100%;
 }

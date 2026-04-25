@@ -1,15 +1,36 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { planAPI, activitiesAPI } from '../services/api';
 import { useStatsStore } from '../store';
+import { useOnboardingStore } from '../store/onboardingStore';
 import type { Activity, ActivityFormData } from '../types';
 import Navigation from '../components/Navigation';
 import ActivityCard from '../components/ActivityCard';
+import { DraggableActivityCard } from '../components/DraggableActivityCard';
 import ActivityEditModal from '../components/ActivityEditModal';
 import ActivityCreateForm from '../components/ActivityCreateForm';
 import ActivityDeleteConfirm from '../components/ActivityDeleteConfirm';
 import ActivityRescheduleModal from '../components/ActivityRescheduleModal';
 import FloatingActionButton from '../components/FloatingActionButton';
+import { OnboardingTour } from '../components/onboarding/OnboardingTour';
+import { dashboardTourSteps } from '../components/onboarding/tourSteps';
+import { AnimatedNumber } from '../components/animations/AnimatedNumber';
+import { StatsCardSkeleton } from '../components/skeletons/StatsCardSkeleton';
+import { ActivityCardSkeleton } from '../components/skeletons/ActivityCardSkeleton';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 export default function DashboardPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -22,12 +43,28 @@ export default function DashboardPage() {
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
-  const navigate = useNavigate();
   const { stats, setStats } = useStatsStore();
+  const { startTour, isTourCompleted } = useOnboardingStore();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      distance: 8,
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     loadData();
   }, [selectedDate]);
+
+  useEffect(() => {
+    // Автоматический запуск тура при первом посещении
+    if (!loading && !isTourCompleted('dashboard')) {
+      setTimeout(() => startTour('dashboard'), 500);
+    }
+  }, [loading]);
 
   const loadData = async () => {
     try {
@@ -109,12 +146,32 @@ export default function DashboardPage() {
     setIsRescheduleModalOpen(true);
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = activities.findIndex((a) => a.id === active.id);
+      const newIndex = activities.findIndex((a) => a.id === over.id);
+
+      const newActivities = arrayMove(activities, oldIndex, newIndex);
+      setActivities(newActivities);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center brutal-grid">
-        <div className="text-center">
-          <div className="text-5xl mb-4 syne font-bold gradient-text">Загрузка</div>
-          <div className="h-1 w-32 bg-[var(--accent-primary)] mx-auto animate-pulse rounded-full"></div>
+      <div className="min-h-screen brutal-grid">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <StatsCardSkeleton count={4} />
+          </div>
+          <div className="mb-8 flex items-center gap-4">
+            <div className="h-10 w-32 skeleton-shimmer rounded"></div>
+          </div>
+          <div className="space-y-6">
+            <ActivityCardSkeleton count={3} />
+          </div>
         </div>
       </div>
     );
@@ -126,12 +183,12 @@ export default function DashboardPage() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" data-tour="stats-cards">
           {[
-            { label: 'Баллы', value: stats?.total_points || 0, icon: '⭐' },
-            { label: 'Стрик', value: stats?.current_streak || 0, icon: '🔥' },
-            { label: 'Выполнено', value: stats?.completed_activities || 0, icon: '✓' },
-            { label: 'Баланс', value: `${stats?.balance_score || 0}%`, icon: '⚖️' }
+            { label: 'Баллы', value: stats?.total_points || 0, icon: '⭐', suffix: '' },
+            { label: 'Стрик', value: stats?.current_streak || 0, icon: '🔥', suffix: '' },
+            { label: 'Выполнено', value: stats?.completed_activities || 0, icon: '✓', suffix: '' },
+            { label: 'Баланс', value: stats?.balance_score || 0, icon: '⚖️', suffix: '%' }
           ].map((stat, i) => (
             <div
               key={stat.label}
@@ -144,7 +201,9 @@ export default function DashboardPage() {
                 </p>
                 <span className="text-2xl">{stat.icon}</span>
               </div>
-              <p className="text-4xl font-bold syne gradient-text">{stat.value}</p>
+              <p className="text-4xl font-bold syne gradient-text">
+                <AnimatedNumber value={stat.value} suffix={stat.suffix} />
+              </p>
             </div>
           ))}
         </div>
@@ -163,7 +222,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Activities List */}
-        <div className="space-y-6">
+        <div className="space-y-6" data-tour="activities-list">
           <div className="flex items-center gap-6 mb-6">
             <h2 className="text-3xl font-bold syne gradient-text">
               {new Date(selectedDate).toLocaleDateString('ru-RU', {
@@ -188,26 +247,42 @@ export default function DashboardPage() {
               </button>
             </div>
           ) : (
-            activities.map((activity, i) => (
-              <div
-                key={activity.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${i * 0.05}s` }}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={activities.map((a) => a.id)}
+                strategy={verticalListSortingStrategy}
               >
-                <ActivityCard
-                  activity={activity}
-                  onEdit={openEditModal}
-                  onDelete={openDeleteModal}
-                  onComplete={handleCompleteActivity}
-                  onReschedule={openRescheduleModal}
-                />
-              </div>
-            ))
+                {activities.map((activity, i) => (
+                  <div
+                    key={activity.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${i * 0.05}s` }}
+                    data-tour={i === 0 ? "activity-card" : undefined}
+                  >
+                    <DraggableActivityCard
+                      activity={activity}
+                      onEdit={openEditModal}
+                      onDelete={openDeleteModal}
+                      onComplete={handleCompleteActivity}
+                      onReschedule={openRescheduleModal}
+                    />
+                  </div>
+                ))}
+              </SortableContext>
+            </DndContext>
           )}
         </div>
       </div>
 
-      <FloatingActionButton onClick={() => setIsCreateModalOpen(true)} />
+      <div data-tour="create-activity">
+        <FloatingActionButton onClick={() => setIsCreateModalOpen(true)} />
+      </div>
+
+      <OnboardingTour tourType="dashboard" steps={dashboardTourSteps} />
 
       <ActivityCreateForm
         isOpen={isCreateModalOpen}
