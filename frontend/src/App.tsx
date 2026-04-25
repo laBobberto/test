@@ -10,6 +10,8 @@ import ChatPage from './pages/ChatPage';
 import MapPage from './pages/MapPage';
 import ProfilePage from './pages/ProfilePage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import SocialPage from './pages/SocialPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 
 const queryClient = new QueryClient();
 
@@ -73,6 +75,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/social"
+            element={
+              <ProtectedRoute>
+                <SocialPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <AnalyticsPage />
               </ProtectedRoute>
             }
           />

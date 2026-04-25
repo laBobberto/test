@@ -159,3 +159,27 @@ class LeaderboardResponse(BaseModel):
     users: List[UserRankResponse]
     my_rank: Optional[UserRankResponse] = None
     total_users: int
+
+# Social schemas
+class FriendshipCreate(BaseModel):
+    friend_username: str
+
+class FriendshipResponse(BaseModel):
+    id: int
+    user_id: int
+    friend_id: int
+    friend_username: str
+    status: str
+    created_at: datetime
+
+class MessageCreate(BaseModel):
+    to_user_id: int
+    content: str
+
+class MessageResponse(BaseModel):
+    id: int
+    from_user_id: int
+    to_user_id: int
+    content: str
+    read_at: Optional[datetime]
+    created_at: datetime

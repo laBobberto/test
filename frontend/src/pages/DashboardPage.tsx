@@ -155,6 +155,24 @@ export default function DashboardPage() {
                   AI Чат
                 </button>
                 <button
+                  onClick={() => navigate('/leaderboard')}
+                  className="text-gray-400 hover:text-white transition"
+                >
+                  Рейтинг
+                </button>
+                <button
+                  onClick={() => navigate('/social')}
+                  className="text-gray-400 hover:text-white transition"
+                >
+                  Друзья
+                </button>
+                <button
+                  onClick={() => navigate('/analytics')}
+                  className="text-gray-400 hover:text-white transition"
+                >
+                  Аналитика
+                </button>
+                <button
                   onClick={() => navigate('/profile')}
                   className="text-gray-400 hover:text-white transition"
                 >
