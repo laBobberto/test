@@ -7,7 +7,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<AIChatMessage[]>([
     {
       role: 'assistant',
-      content: 'Привет! Я твой персональный ассистент LifeBalance SPb. Чем могу помочь?',
+      content: 'Привет! Я твой персональный ассистент "В потоке". Чем могу помочь?',
     },
   ]);
   const [input, setInput] = useState('');
