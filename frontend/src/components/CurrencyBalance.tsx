@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AnimatedNumber } from '../animations/AnimatedNumber';
+import { AnimatedNumber } from './animations/AnimatedNumber';
 
 interface CurrencyBalanceProps {
   balance: number;
