@@ -46,6 +46,8 @@ export default function Navigation() {
     { name: 'Карта', path: '/map' },
     { name: 'Чат', path: '/chat' },
     { name: 'Расписание', path: '/schedule' },
+    { name: 'Челленджи', path: '/challenges' },
+    { name: 'Магазин', path: '/store' },
     { name: 'Блог', path: '/blog' },
     { name: 'Попутчики', path: '/companions' },
     { name: 'Рейтинг', path: '/leaderboard' },
