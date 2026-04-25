@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # Omniroute AI
     OMNIROUTE_API_URL: str = "http://127.0.0.1:20128/v1/messages"
     OMNIROUTE_API_KEY: str = "sk-547afbc81b7e4079-f3578f-f1712278"
-    OMNIROUTE_MODEL: str = "kr/claude-sonnet-4.5"
+    OMNIROUTE_MODEL: str = "kr/claude-haiku-4.5"
     
     # External APIs
     LETI_API_URL: str = "https://digital.etu.ru/api"

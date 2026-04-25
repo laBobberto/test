@@ -41,9 +41,9 @@ export default function YandexMap({
   }, []);
 
   useEffect(() => {
-    if (!isLoaded || !mapRef.current) return;
+    if (!isLoaded || !mapRef.current || mapInstance) return;
 
-    // Create map
+    // Create map only once
     const map = new window.ymaps.Map(mapRef.current, {
       center: center,
       zoom: zoom,
@@ -55,7 +55,7 @@ export default function YandexMap({
     return () => {
       map.destroy();
     };
-  }, [isLoaded, center, zoom]);
+  }, [isLoaded]);
 
   useEffect(() => {
     if (!mapInstance) return;

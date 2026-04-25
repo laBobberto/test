@@ -72,6 +72,19 @@ export const userAPI = {
     const response = await api.get<Priority[]>('/api/user/priorities');
     return response.data;
   },
+
+  updateLocationPreferences: async (homeAddress?: string, maxTravelTime?: number) => {
+    const response = await api.put('/api/user/location-preferences', {
+      home_address: homeAddress,
+      max_travel_time: maxTravelTime,
+    });
+    return response.data;
+  },
+
+  getLocationPreferences: async () => {
+    const response = await api.get('/api/user/location-preferences');
+    return response.data;
+  },
 };
 
 // Plan API

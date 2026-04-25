@@ -97,3 +97,48 @@ async def get_priorities(
     
     priorities = db.query(Priority).filter(Priority.user_id == current_user.id).all()
     return priorities
+
+from pydantic import BaseModel
+
+class LocationPreferencesUpdate(BaseModel):
+    home_address: Optional[str] = None
+    max_travel_time: Optional[int] = None
+
+@router.put("/location-preferences")
+async def update_location_preferences(
+    preferences: LocationPreferencesUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update user location preferences"""
+    
+    if preferences.home_address is not None:
+        current_user.home_address = preferences.home_address
+    
+    if preferences.max_travel_time is not None:
+        if preferences.max_travel_time < 0 or preferences.max_travel_time > 180:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="max_travel_time must be between 0 and 180 minutes"
+            )
+        current_user.max_travel_time = preferences.max_travel_time
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    return {
+        "home_address": current_user.home_address,
+        "max_travel_time": current_user.max_travel_time,
+        "message": "Location preferences updated successfully"
+    }
+
+@router.get("/location-preferences")
+async def get_location_preferences(
+    current_user: User = Depends(get_current_user)
+):
+    """Get user location preferences"""
+    
+    return {
+        "home_address": current_user.home_address,
+        "max_travel_time": current_user.max_travel_time or 30
+    }

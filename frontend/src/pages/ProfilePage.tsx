@@ -8,6 +8,10 @@ import type { Achievement } from '../types';
 export default function ProfilePage() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [homeAddress, setHomeAddress] = useState('');
+  const [maxTravelTime, setMaxTravelTime] = useState(30);
+  const [editingLocation, setEditingLocation] = useState(false);
+  const [savingLocation, setSavingLocation] = useState(false);
 
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -30,10 +34,27 @@ export default function ProfilePage() {
 
       const userStats = await activitiesAPI.getStats();
       useStatsStore.getState().setStats(userStats);
+
+      const locationPrefs = await userAPI.getLocationPreferences();
+      setHomeAddress(locationPrefs.home_address || '');
+      setMaxTravelTime(locationPrefs.max_travel_time || 30);
     } catch (error) {
       console.error('Error loading profile data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveLocation = async () => {
+    try {
+      setSavingLocation(true);
+      await userAPI.updateLocationPreferences(homeAddress || undefined, maxTravelTime);
+      setEditingLocation(false);
+    } catch (error) {
+      console.error('Error saving location preferences:', error);
+      alert('Ошибка при сохранении настроек');
+    } finally {
+      setSavingLocation(false);
     }
   };
 
@@ -102,6 +123,83 @@ export default function ProfilePage() {
               <p className="text-4xl font-bold syne gradient-text">{stat.value}</p>
             </div>
           ))}
+        </div>
+
+        {/* Location Preferences */}
+        <div className="card mb-8">
+          <h2 className="text-2xl font-bold syne gradient-text mb-6">Местоположение</h2>
+
+          {!editingLocation ? (
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  Домашний адрес
+                </p>
+                <p className="text-lg">
+                  {homeAddress || <span style={{ color: 'var(--text-secondary)' }}>Не указан</span>}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  Максимальное время в пути
+                </p>
+                <p className="text-lg">{maxTravelTime} минут</p>
+              </div>
+              <button
+                onClick={() => setEditingLocation(true)}
+                className="btn-secondary w-full"
+              >
+                Изменить
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Домашний адрес
+                </label>
+                <input
+                  type="text"
+                  value={homeAddress}
+                  onChange={(e) => setHomeAddress(e.target.value)}
+                  placeholder="Например: Невский проспект, 1"
+                  className="w-full px-4 py-3 bg-[var(--bg-tertiary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Максимальное время в пути (минуты)
+                </label>
+                <input
+                  type="number"
+                  value={maxTravelTime}
+                  onChange={(e) => setMaxTravelTime(Number(e.target.value))}
+                  min="0"
+                  max="180"
+                  className="w-full px-4 py-3 bg-[var(--bg-tertiary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveLocation}
+                  disabled={savingLocation}
+                  className="btn-primary flex-1"
+                >
+                  {savingLocation ? 'Сохранение...' : 'Сохранить'}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingLocation(false);
+                    loadData();
+                  }}
+                  disabled={savingLocation}
+                  className="btn-secondary flex-1"
+                >
+                  Отмена
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Priorities */}

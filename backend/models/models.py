@@ -19,17 +19,22 @@ class PriorityCategory(str, enum.Enum):
 
 class User(Base):
     __tablename__ = "users"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     roles = Column(String, nullable=False)  # JSON string of roles
     created_at = Column(DateTime, default=datetime.utcnow)
-    
+
+    # Location preferences
+    home_address = Column(String)  # Домашний адрес
+    max_travel_time = Column(Integer, default=30)  # Максимальное время в пути (минуты)
+
     priorities = relationship("Priority", back_populates="user")
     activities = relationship("Activity", back_populates="user")
     achievements = relationship("UserAchievement", back_populates="user")
+    chat_messages = relationship("ChatMessage", back_populates="user")
 
 class Priority(Base):
     __tablename__ = "priorities"
@@ -44,7 +49,7 @@ class Priority(Base):
 
 class Activity(Base):
     __tablename__ = "activities"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     title = Column(String, nullable=False)
@@ -56,13 +61,30 @@ class Activity(Base):
     completed = Column(Boolean, default=False)
     points_earned = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
-    
+
     # New fields for v2.0
     is_custom = Column(Boolean, default=True)  # True = user-created, False = AI-generated
     recurrence = Column(Text)  # JSON: {"type": "daily/weekly/monthly", "days": [1,2,3], "end_date": "2026-12-31"}
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
+    # Fields for external integrations (LETI, etc)
+    source = Column(String)  # "leti", "ai", "manual", etc
+    external_id = Column(String)  # External system ID for deduplication
+
     user = relationship("User", back_populates="activities")
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    role = Column(String, nullable=False)  # "user" or "assistant"
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="chat_messages")
+
 
 class Event(Base):
     __tablename__ = "events"
