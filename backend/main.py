@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database.connection import Base, engine
-from api import auth, user, plan, events, activities, maps, leaderboard
+from api import auth, user, plan, events, activities, maps, leaderboard, weather
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -9,7 +9,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="LifeBalance SPb API",
     description="Personal urban assistant for Saint Petersburg",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 # CORS middleware
@@ -29,6 +29,7 @@ app.include_router(events.router)
 app.include_router(activities.router)
 app.include_router(maps.router)
 app.include_router(leaderboard.router)
+app.include_router(weather.router)
 
 @app.get("/")
 async def root():
