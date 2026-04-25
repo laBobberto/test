@@ -11,8 +11,8 @@ import ActivityCreateForm from '../components/ActivityCreateForm';
 import ActivityDeleteConfirm from '../components/ActivityDeleteConfirm';
 import ActivityRescheduleModal from '../components/ActivityRescheduleModal';
 import FloatingActionButton from '../components/FloatingActionButton';
-import { OnboardingTour } from '../components/onboarding/OnboardingTour';
-import { dashboardTourSteps } from '../components/onboarding/tourSteps';
+// import { OnboardingTour } from '../components/onboarding/OnboardingTour';
+// import { dashboardTourSteps } from '../components/onboarding/tourSteps';
 import { AnimatedNumber } from '../components/animations/AnimatedNumber';
 import { StatsCardSkeleton } from '../components/skeletons/StatsCardSkeleton';
 import { ActivityCardSkeleton } from '../components/skeletons/ActivityCardSkeleton';
@@ -23,8 +23,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
 } from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
@@ -282,7 +282,7 @@ export default function DashboardPage() {
         <FloatingActionButton onClick={() => setIsCreateModalOpen(true)} />
       </div>
 
-      <OnboardingTour tourType="dashboard" steps={dashboardTourSteps} />
+      {/* <OnboardingTour tourType="dashboard" steps={dashboardTourSteps} /> */}
 
       <ActivityCreateForm
         isOpen={isCreateModalOpen}

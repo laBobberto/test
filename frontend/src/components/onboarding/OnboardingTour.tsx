@@ -1,5 +1,6 @@
 import React from 'react';
-import { Joyride, CallBackProps, Step, STATUS } from 'react-joyride';
+import { default as Joyride } from 'react-joyride';
+import type { CallBackProps, Step, STATUS } from 'react-joyride';
 import { useOnboardingStore } from '../../store/onboardingStore';
 import type { TourType } from '../../store/onboardingStore';
 
