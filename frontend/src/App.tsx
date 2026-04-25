@@ -17,9 +17,7 @@ import GroupsPage from './pages/GroupsPage';
 import FriendsPage from './pages/FriendsPage';
 import SchedulePage from './pages/SchedulePage';
 import ChallengesPage from './pages/ChallengesPage';
-import QuestsPage from './pages/QuestsPage';
 import StorePage from './pages/StorePage';
-import MyPurchasesPage from './pages/MyPurchasesPage';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
 import MyCompanionsPage from './pages/MyCompanionsPage';
@@ -144,16 +142,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
-          <Route
-            path="/quests"
-            element={
-              <ProtectedRoute>
-                <QuestsPage />
-              </ProtectedRoute>
-            }
-          />
-          
+
           <Route
             path="/store"
             element={
@@ -162,16 +151,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
-          <Route
-            path="/purchases"
-            element={
-              <ProtectedRoute>
-                <MyPurchasesPage />
-              </ProtectedRoute>
-            }
-          />
-          
+
           <Route
             path="/blog"
             element={
