@@ -1,13 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { planAPI, activitiesAPI, userAPI } from '../services/api';
-import { useAuthStore, useActivitiesStore, useStatsStore } from '../store';
-import type { Activity } from '../types';
+import { planAPI, activitiesAPI } from '../services/api';
+import { useAuthStore, useStatsStore } from '../store';
+import type { Activity, ActivityFormData } from '../types';
+import ActivityCard from '../components/ActivityCard';
+import ActivityEditModal from '../components/ActivityEditModal';
+import ActivityCreateForm from '../components/ActivityCreateForm';
+import ActivityDeleteConfirm from '../components/ActivityDeleteConfirm';
+import ActivityRescheduleModal from '../components/ActivityRescheduleModal';
+import FloatingActionButton from '../components/FloatingActionButton';
 
 export default function DashboardPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Modal states
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
@@ -35,10 +48,49 @@ export default function DashboardPage() {
     }
   };
 
+  const handleCreateActivity = async (data: ActivityFormData) => {
+    try {
+      await activitiesAPI.createActivity(data);
+      loadData();
+    } catch (error) {
+      console.error('Error creating activity:', error);
+    }
+  };
+
+  const handleUpdateActivity = async (id: number, data: Partial<ActivityFormData>) => {
+    try {
+      await activitiesAPI.updateActivity(id, data);
+      loadData();
+    } catch (error) {
+      console.error('Error updating activity:', error);
+    }
+  };
+
+  const handleDeleteActivity = async () => {
+    if (!selectedActivity) return;
+    try {
+      await activitiesAPI.deleteActivity(selectedActivity.id);
+      setIsDeleteModalOpen(false);
+      setSelectedActivity(null);
+      loadData();
+    } catch (error) {
+      console.error('Error deleting activity:', error);
+    }
+  };
+
+  const handleRescheduleActivity = async (id: number, start_time: string, end_time: string) => {
+    try {
+      await activitiesAPI.rescheduleActivity(id, start_time, end_time);
+      loadData();
+    } catch (error) {
+      console.error('Error rescheduling activity:', error);
+    }
+  };
+
   const handleCompleteActivity = async (activityId: number) => {
     try {
       await activitiesAPI.completeActivity(activityId);
-      loadData(); // Reload data
+      loadData();
     } catch (error) {
       console.error('Error completing activity:', error);
     }
@@ -47,6 +99,24 @@ export default function DashboardPage() {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const openEditModal = (activity: Activity) => {
+    setSelectedActivity(activity);
+    setIsEditModalOpen(true);
+  };
+
+  const openDeleteModal = (activityId: number) => {
+    const activity = activities.find(a => a.id === activityId);
+    if (activity) {
+      setSelectedActivity(activity);
+      setIsDeleteModalOpen(true);
+    }
+  };
+
+  const openRescheduleModal = (activity: Activity) => {
+    setSelectedActivity(activity);
+    setIsRescheduleModalOpen(true);
   };
 
   if (loading) {
@@ -74,29 +144,29 @@ export default function DashboardPage() {
                 </button>
                 <button
                   onClick={() => navigate('/map')}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-white transition"
                 >
                   Карта
                 </button>
                 <button
                   onClick={() => navigate('/chat')}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-white transition"
                 >
                   AI Чат
                 </button>
                 <button
                   onClick={() => navigate('/profile')}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-white transition"
                 >
                   Профиль
                 </button>
               </nav>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-gray-300">👋 {user?.username}</span>
+              <span className="text-gray-300">{user?.username}</span>
               <button
                 onClick={handleLogout}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-white transition"
               >
                 Выход
               </button>
@@ -106,190 +176,141 @@ export default function DashboardPage() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Stats Cards */}
-          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Баллы</p>
-                  <p className="text-3xl font-bold text-white">
-                    {stats?.total_points || 0}
-                  </p>
-                </div>
-                <div className="text-4xl">🏆</div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-slate-800 rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Баллы</p>
+                <p className="text-3xl font-bold text-white">
+                  {stats?.total_points || 0}
+                </p>
               </div>
-            </div>
-
-            <div className="card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Стрик</p>
-                  <p className="text-3xl font-bold text-white">
-                    {stats?.current_streak || 0}
-                  </p>
-                </div>
-                <div className="text-4xl">🔥</div>
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Выполнено</p>
-                  <p className="text-3xl font-bold text-white">
-                    {stats?.completed_activities || 0}
-                  </p>
-                </div>
-                <div className="text-4xl">✅</div>
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Баланс</p>
-                  <p className="text-3xl font-bold text-white">
-                    {stats?.balance_score || 0}%
-                  </p>
-                </div>
-                <div className="text-4xl">⚖️</div>
-              </div>
+              <div className="text-4xl">🏆</div>
             </div>
           </div>
 
-          {/* Daily Plan */}
-          <div className="lg:col-span-2">
-            <div className="card">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">План дня</h2>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="input"
-                />
+          <div className="bg-slate-800 rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Стрик</p>
+                <p className="text-3xl font-bold text-white">
+                  {stats?.current_streak || 0}
+                </p>
               </div>
-
-              {activities.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-400 mb-4">
-                    Нет запланированных активностей
-                  </p>
-                  <button
-                    onClick={() => navigate('/chat')}
-                    className="btn-primary"
-                  >
-                    Создать план с AI
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {activities.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        activity.completed
-                          ? 'border-green-500 bg-green-500/10'
-                          : 'border-slate-600 bg-slate-700/50'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm text-gray-400">
-                              {new Date(activity.start_time).toLocaleTimeString('ru-RU', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                              {' - '}
-                              {new Date(activity.end_time).toLocaleTimeString('ru-RU', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </span>
-                            <span className="px-2 py-1 bg-primary-500/20 text-primary-400 text-xs rounded">
-                              {activity.category}
-                            </span>
-                          </div>
-                          <h3 className="text-lg font-semibold text-white mb-1">
-                            {activity.title}
-                          </h3>
-                          {activity.description && (
-                            <p className="text-gray-400 text-sm mb-2">
-                              {activity.description}
-                            </p>
-                          )}
-                          {activity.location && (
-                            <p className="text-gray-500 text-sm">
-                              📍 {activity.location}
-                            </p>
-                          )}
-                        </div>
-                        {!activity.completed && (
-                          <button
-                            onClick={() => handleCompleteActivity(activity.id)}
-                            className="ml-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                          >
-                            Выполнено
-                          </button>
-                        )}
-                        {activity.completed && (
-                          <div className="ml-4 text-green-400 text-2xl">✓</div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="text-4xl">🔥</div>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="lg:col-span-1">
-            <div className="card mb-6">
-              <h2 className="text-xl font-bold text-white mb-4">
-                Быстрые действия
-              </h2>
-              <div className="space-y-3">
-                <button
-                  onClick={() => navigate('/chat')}
-                  className="w-full btn-primary"
-                >
-                  💬 Чат с AI
-                </button>
-                <button
-                  onClick={() => navigate('/map')}
-                  className="w-full btn-secondary"
-                >
-                  🗺️ События на карте
-                </button>
-                <button
-                  onClick={() => navigate('/priorities')}
-                  className="w-full btn-secondary"
-                >
-                  ⚙️ Настроить приоритеты
-                </button>
+          <div className="bg-slate-800 rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Выполнено</p>
+                <p className="text-3xl font-bold text-white">
+                  {stats?.completed_activities || 0}
+                </p>
               </div>
+              <div className="text-4xl">✅</div>
             </div>
+          </div>
 
-            <div className="card">
-              <h2 className="text-xl font-bold text-white mb-4">
-                Достижения
-              </h2>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
-                  <span className="text-3xl">🎯</span>
-                  <div>
-                    <p className="text-white font-medium">Первый шаг</p>
-                    <p className="text-gray-400 text-sm">+10 баллов</p>
-                  </div>
-                </div>
+          <div className="bg-slate-800 rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Баланс</p>
+                <p className="text-3xl font-bold text-white">
+                  {stats?.balance_score || 0}%
+                </p>
               </div>
+              <div className="text-4xl">⚖️</div>
             </div>
           </div>
         </div>
+
+        {/* Date Selector */}
+        <div className="mb-6">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="px-4 py-2 bg-slate-800 text-white rounded border border-slate-600 focus:border-primary-500 focus:outline-none"
+          />
+        </div>
+
+        {/* Activities List */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Дела на {new Date(selectedDate).toLocaleDateString('ru-RU', { 
+              day: 'numeric', 
+              month: 'long',
+              year: 'numeric'
+            })}
+          </h2>
+
+          {activities.length === 0 ? (
+            <div className="bg-slate-800 rounded-lg p-8 text-center">
+              <p className="text-gray-400 mb-4">Нет дел на этот день</p>
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="bg-primary-500 text-white px-6 py-2 rounded hover:bg-primary-600 transition"
+              >
+                Создать первое дело
+              </button>
+            </div>
+          ) : (
+            activities.map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                onEdit={openEditModal}
+                onDelete={openDeleteModal}
+                onComplete={handleCompleteActivity}
+                onReschedule={openRescheduleModal}
+              />
+            ))
+          )}
+        </div>
       </div>
+
+      {/* Floating Action Button */}
+      <FloatingActionButton onClick={() => setIsCreateModalOpen(true)} />
+
+      {/* Modals */}
+      <ActivityCreateForm
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateActivity}
+      />
+
+      <ActivityEditModal
+        activity={selectedActivity}
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedActivity(null);
+        }}
+        onSave={handleUpdateActivity}
+      />
+
+      <ActivityDeleteConfirm
+        isOpen={isDeleteModalOpen}
+        activityTitle={selectedActivity?.title || ''}
+        onConfirm={handleDeleteActivity}
+        onCancel={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedActivity(null);
+        }}
+      />
+
+      <ActivityRescheduleModal
+        activity={selectedActivity}
+        isOpen={isRescheduleModalOpen}
+        onClose={() => {
+          setIsRescheduleModalOpen(false);
+          setSelectedActivity(null);
+        }}
+        onReschedule={handleRescheduleActivity}
+      />
     </div>
   );
 }

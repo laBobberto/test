@@ -127,6 +127,28 @@ export const activitiesAPI = {
     return response.data;
   },
 
+  getActivity: async (id: number) => {
+    const response = await api.get<Activity>(`/api/activities/${id}`);
+    return response.data;
+  },
+
+  updateActivity: async (id: number, data: Partial<Activity>) => {
+    const response = await api.put<Activity>(`/api/activities/${id}`, data);
+    return response.data;
+  },
+
+  deleteActivity: async (id: number) => {
+    await api.delete(`/api/activities/${id}`);
+  },
+
+  rescheduleActivity: async (id: number, start_time: string, end_time: string) => {
+    const response = await api.patch<Activity>(`/api/activities/${id}/reschedule`, {
+      start_time,
+      end_time,
+    });
+    return response.data;
+  },
+
   completeActivity: async (activityId: number) => {
     const response = await api.post<Activity>('/api/activities/complete', {
       activity_id: activityId,

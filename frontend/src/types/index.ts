@@ -24,6 +24,27 @@ export interface Activity {
   completed: boolean;
   points_earned: number;
   created_at: string;
+  is_custom?: boolean;
+  recurrence?: {
+    type: 'daily' | 'weekly' | 'monthly';
+    days?: number[];
+    end_date?: string;
+  };
+  updated_at?: string;
+}
+
+export interface ActivityFormData {
+  title: string;
+  description?: string;
+  category: string;
+  start_time: string;
+  end_time: string;
+  location?: string;
+  recurrence?: {
+    type: 'daily' | 'weekly' | 'monthly';
+    days?: number[];
+    end_date?: string;
+  };
 }
 
 export interface Event {

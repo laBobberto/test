@@ -57,6 +57,11 @@ class Activity(Base):
     points_earned = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     
+    # New fields for v2.0
+    is_custom = Column(Boolean, default=True)  # True = user-created, False = AI-generated
+    recurrence = Column(Text)  # JSON: {"type": "daily/weekly/monthly", "days": [1,2,3], "end_date": "2026-12-31"}
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
     user = relationship("User", back_populates="activities")
 
 class Event(Base):

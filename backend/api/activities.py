@@ -5,7 +5,11 @@ from datetime import datetime
 
 from database.connection import get_db
 from models.models import User, Activity, Achievement, UserAchievement
-from models.schemas import ActivityCreate, ActivityResponse, ActivityComplete, AchievementResponse, UserStatsResponse
+from models.schemas import (
+    ActivityCreate, ActivityUpdate, ActivityReschedule,
+    ActivityResponse, ActivityComplete, 
+    AchievementResponse, UserStatsResponse
+)
 from api.user import get_current_user
 
 router = APIRouter(prefix="/api/activities", tags=["activities"])
@@ -119,3 +123,105 @@ async def get_user_stats(
         achievements_count=achievements_count,
         balance_score=75.0  # Placeholder
     )
+
+@router.get("/{activity_id}", response_model=ActivityResponse)
+async def get_activity(
+    activity_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get single activity by ID"""
+    activity = db.query(Activity).filter(
+        Activity.id == activity_id,
+        Activity.user_id == current_user.id
+    ).first()
+    
+    if not activity:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activity not found"
+        )
+    
+    return activity
+
+@router.put("/{activity_id}", response_model=ActivityResponse)
+async def update_activity(
+    activity_id: int,
+    activity_data: ActivityUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update activity"""
+    activity = db.query(Activity).filter(
+        Activity.id == activity_id,
+        Activity.user_id == current_user.id
+    ).first()
+    
+    if not activity:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activity not found"
+        )
+    
+    # Update fields
+    update_data = activity_data.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(activity, field, value)
+    
+    activity.updated_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(activity)
+    
+    return activity
+
+@router.delete("/{activity_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_activity(
+    activity_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete activity"""
+    activity = db.query(Activity).filter(
+        Activity.id == activity_id,
+        Activity.user_id == current_user.id
+    ).first()
+    
+    if not activity:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activity not found"
+        )
+    
+    db.delete(activity)
+    db.commit()
+    
+    return None
+
+@router.patch("/{activity_id}/reschedule", response_model=ActivityResponse)
+async def reschedule_activity(
+    activity_id: int,
+    reschedule_data: ActivityReschedule,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Reschedule activity to new time"""
+    activity = db.query(Activity).filter(
+        Activity.id == activity_id,
+        Activity.user_id == current_user.id
+    ).first()
+    
+    if not activity:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activity not found"
+        )
+    
+    activity.start_time = reschedule_data.start_time
+    activity.end_time = reschedule_data.end_time
+    activity.updated_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(activity)
+    
+    return activity

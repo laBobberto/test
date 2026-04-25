@@ -54,9 +54,24 @@ class ActivityBase(BaseModel):
     start_time: datetime
     end_time: datetime
     location: Optional[str] = None
+    is_custom: Optional[bool] = True
+    recurrence: Optional[dict] = None
 
 class ActivityCreate(ActivityBase):
     pass
+
+class ActivityUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    location: Optional[str] = None
+    recurrence: Optional[dict] = None
+
+class ActivityReschedule(BaseModel):
+    start_time: datetime
+    end_time: datetime
 
 class ActivityResponse(ActivityBase):
     id: int
@@ -64,6 +79,7 @@ class ActivityResponse(ActivityBase):
     completed: bool
     points_earned: int
     created_at: datetime
+    updated_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True
