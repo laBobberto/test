@@ -1,0 +1,26 @@
+# Backend
+backend/__pycache__/
+backend/*.py[cod]
+backend/venv/
+backend/.env
+backend/*.db
+backend/*.sqlite
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/test-results/
+frontend/playwright-report/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
