@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { planAPI, activitiesAPI } from '../services/api';
 import { useStatsStore } from '../store';
 import type { Activity, ActivityFormData } from '../types';
@@ -22,7 +21,6 @@ export default function DashboardPage() {
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
-  const navigate = useNavigate();
   const { stats, setStats } = useStatsStore();
 
   useEffect(() => {

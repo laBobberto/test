@@ -85,7 +85,7 @@ export interface DailyPlan {
   balance_score: number;
 }
 
-export interface ChatMessage {
+export interface AIChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }

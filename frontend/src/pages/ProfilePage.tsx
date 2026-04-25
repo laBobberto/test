@@ -272,7 +272,7 @@ export default function ProfilePage() {
                   <div className="flex items-start gap-4">
                     <span className="text-3xl">{achievement.icon}</span>
                     <div>
-                      <h3 className="font-bold mb-1">{achievement.title}</h3>
+                      <h3 className="font-bold mb-1">{achievement.name}</h3>
                       <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                         {achievement.description}
                       </p>
