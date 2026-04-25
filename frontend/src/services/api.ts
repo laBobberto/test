@@ -13,7 +13,18 @@ import type {
   Friend,
   LeaderboardEntry,
   Chat,
-  ChatMessage
+  ChatMessage,
+  Challenge,
+  Quest,
+  VirtualCurrency,
+  CurrencyTransaction,
+  StoreItem,
+  Purchase,
+  BlogPost,
+  BlogCategory,
+  EventCompanion,
+  CompanionRequest,
+  EventGroup
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -378,5 +389,191 @@ export const chatAPI = {
 
   markAsRead: async (chatId: number) => {
     await api.post(`/api/chats/${chatId}/read`);
+  },
+};
+
+// Challenges API
+export const challengesAPI = {
+  getChallenges: async (type?: string) => {
+    const response = await api.get<Challenge[]>('/api/challenges/', {
+      params: { type },
+    });
+    return response.data;
+  },
+
+  getChallenge: async (id: number) => {
+    const response = await api.get<Challenge>(`/api/challenges/${id}`);
+    return response.data;
+  },
+
+  acceptChallenge: async (id: number) => {
+    const response = await api.post<Challenge>(`/api/challenges/${id}/accept`);
+    return response.data;
+  },
+
+  completeChallenge: async (id: number) => {
+    const response = await api.post<Challenge>(`/api/challenges/${id}/complete`);
+    return response.data;
+  },
+
+  getActiveChallenges: async () => {
+    const response = await api.get<Challenge[]>('/api/challenges/active');
+    return response.data;
+  },
+};
+
+// Quests API
+export const questsAPI = {
+  getQuests: async () => {
+    const response = await api.get<Quest[]>('/api/quests/');
+    return response.data;
+  },
+
+  getQuest: async (id: number) => {
+    const response = await api.get<Quest>(`/api/quests/${id}`);
+    return response.data;
+  },
+
+  startQuest: async (id: number) => {
+    const response = await api.post<Quest>(`/api/quests/${id}/start`);
+    return response.data;
+  },
+
+  completeQuestStep: async (questId: number, stepId: number) => {
+    const response = await api.post<Quest>(`/api/quests/${questId}/steps/${stepId}/complete`);
+    return response.data;
+  },
+};
+
+// Currency API
+export const currencyAPI = {
+  getBalance: async () => {
+    const response = await api.get<VirtualCurrency>('/api/currency/balance');
+    return response.data;
+  },
+
+  getTransactions: async (limit: number = 50) => {
+    const response = await api.get<CurrencyTransaction[]>('/api/currency/transactions', {
+      params: { limit },
+    });
+    return response.data;
+  },
+
+  getStoreItems: async (category?: string) => {
+    const response = await api.get<StoreItem[]>('/api/store/items', {
+      params: { category },
+    });
+    return response.data;
+  },
+
+  purchaseItem: async (itemId: number) => {
+    const response = await api.post<Purchase>('/api/store/purchase', { item_id: itemId });
+    return response.data;
+  },
+
+  getPurchases: async () => {
+    const response = await api.get<Purchase[]>('/api/store/purchases');
+    return response.data;
+  },
+
+  useItem: async (purchaseId: number) => {
+    const response = await api.post<Purchase>(`/api/store/purchases/${purchaseId}/use`);
+    return response.data;
+  },
+};
+
+// Blog API
+export const blogAPI = {
+  getPosts: async (params?: { category?: string; tag?: string; limit?: number; offset?: number }) => {
+    const response = await api.get<BlogPost[]>('/api/blog/posts', { params });
+    return response.data;
+  },
+
+  getPost: async (slug: string) => {
+    const response = await api.get<BlogPost>(`/api/blog/posts/${slug}`);
+    return response.data;
+  },
+
+  likePost: async (id: number) => {
+    const response = await api.post<BlogPost>(`/api/blog/posts/${id}/like`);
+    return response.data;
+  },
+
+  getCategories: async () => {
+    const response = await api.get<BlogCategory[]>('/api/blog/categories');
+    return response.data;
+  },
+
+  getTrendingPosts: async (limit: number = 5) => {
+    const response = await api.get<BlogPost[]>('/api/blog/trending', { params: { limit } });
+    return response.data;
+  },
+
+  searchPosts: async (query: string) => {
+    const response = await api.get<BlogPost[]>('/api/blog/search', { params: { q: query } });
+    return response.data;
+  },
+};
+
+// Event Companions API
+export const companionsAPI = {
+  getCompanionPosts: async (eventId: number) => {
+    const response = await api.get<EventCompanion[]>(`/api/events/${eventId}/companions`);
+    return response.data;
+  },
+
+  createCompanionPost: async (data: { event_id: number; message: string; max_companions: number }) => {
+    const response = await api.post<EventCompanion>('/api/companions/posts', data);
+    return response.data;
+  },
+
+  deleteCompanionPost: async (id: number) => {
+    await api.delete(`/api/companions/posts/${id}`);
+  },
+
+  sendCompanionRequest: async (postId: number, message: string) => {
+    const response = await api.post<CompanionRequest>(`/api/companions/posts/${postId}/requests`, {
+      message,
+    });
+    return response.data;
+  },
+
+  getMyRequests: async () => {
+    const response = await api.get<CompanionRequest[]>('/api/companions/requests');
+    return response.data;
+  },
+
+  acceptRequest: async (requestId: number) => {
+    const response = await api.post<CompanionRequest>(`/api/companions/requests/${requestId}/accept`);
+    return response.data;
+  },
+
+  rejectRequest: async (requestId: number) => {
+    const response = await api.post<CompanionRequest>(`/api/companions/requests/${requestId}/reject`);
+    return response.data;
+  },
+
+  getEventGroups: async (eventId: number) => {
+    const response = await api.get<EventGroup[]>(`/api/events/${eventId}/groups`);
+    return response.data;
+  },
+
+  createEventGroup: async (data: {
+    event_id: number;
+    name: string;
+    description: string;
+    max_members: number;
+  }) => {
+    const response = await api.post<EventGroup>('/api/event-groups', data);
+    return response.data;
+  },
+
+  joinEventGroup: async (groupId: number) => {
+    const response = await api.post<EventGroup>(`/api/event-groups/${groupId}/join`);
+    return response.data;
+  },
+
+  leaveEventGroup: async (groupId: number) => {
+    await api.post(`/api/event-groups/${groupId}/leave`);
   },
 };

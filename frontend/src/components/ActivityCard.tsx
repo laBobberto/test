@@ -1,4 +1,7 @@
 import type { Activity } from '../types';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { triggerConfetti } from './animations/ConfettiEffect';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -15,6 +18,8 @@ export default function ActivityCard({
   onComplete,
   onReschedule,
 }: ActivityCardProps) {
+  const [isCompleting, setIsCompleting] = useState(false);
+  
   const startTime = new Date(activity.start_time).toLocaleTimeString('ru-RU', {
     hour: '2-digit',
     minute: '2-digit',
@@ -42,8 +47,24 @@ export default function ActivityCard({
     household: 'Быт',
   };
 
+  const handleComplete = async () => {
+    setIsCompleting(true);
+    triggerConfetti();
+    setTimeout(() => {
+      onComplete(activity.id);
+      setIsCompleting(false);
+    }, 500);
+  };
+
   return (
-    <div className={`bg-slate-800 rounded-lg p-4 border-l-4 ${categoryColors[activity.category] || 'border-gray-500'} ${activity.completed ? 'opacity-60' : ''}`}>
+    <motion.div 
+      className={`bg-slate-800 rounded-lg p-4 border-l-4 ${categoryColors[activity.category] || 'border-gray-500'} ${activity.completed ? 'opacity-60' : ''}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -100 }}
+      whileHover={{ scale: 1.02, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}
+      transition={{ duration: 0.2 }}
+    >
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
@@ -74,55 +95,69 @@ export default function ActivityCard({
         <div className="flex items-center gap-2 ml-4">
           {!activity.completed && (
             <>
-              <button
+              <motion.button
                 onClick={() => onEdit(activity)}
                 className="p-2 text-blue-400 hover:bg-slate-700 rounded transition"
                 title="Редактировать"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 onClick={() => onReschedule(activity)}
                 className="p-2 text-yellow-400 hover:bg-slate-700 rounded transition"
                 title="Перенести"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-              </button>
-              <button
-                onClick={() => onComplete(activity.id)}
+              </motion.button>
+              <motion.button
+                onClick={handleComplete}
                 className="p-2 text-green-400 hover:bg-slate-700 rounded transition"
                 title="Завершить"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                disabled={isCompleting}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-              </button>
+              </motion.button>
             </>
           )}
-          <button
+          <motion.button
             onClick={() => onDelete(activity.id)}
             className="p-2 text-red-400 hover:bg-slate-700 rounded transition"
             title="Удалить"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-          </button>
+          </motion.button>
         </div>
       </div>
       
       {activity.completed && (
-        <div className="mt-2 text-green-400 text-sm flex items-center gap-2">
+        <motion.div 
+          className="mt-2 text-green-400 text-sm flex items-center gap-2"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           Завершено (+{activity.points_earned} баллов)
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

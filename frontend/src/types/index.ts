@@ -161,3 +161,155 @@ export interface Chat {
   unread_count?: number;
 }
 
+// Challenges & Quests
+export interface Challenge {
+  id: number;
+  title: string;
+  description: string;
+  type: 'daily' | 'weekly' | 'monthly' | 'special';
+  category?: PriorityCategory;
+  goal: number;
+  current_progress: number;
+  reward_points: number;
+  reward_currency?: number;
+  start_date: string;
+  end_date: string;
+  status: 'active' | 'completed' | 'expired';
+  icon?: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
+export interface QuestStep {
+  id: number;
+  title: string;
+  description: string;
+  completed: boolean;
+  order: number;
+}
+
+export interface Quest {
+  id: number;
+  title: string;
+  description: string;
+  steps: QuestStep[];
+  reward_points: number;
+  reward_currency: number;
+  reward_items?: string[];
+  status: 'locked' | 'active' | 'completed';
+  completion_percentage: number;
+}
+
+// Virtual Currency
+export interface VirtualCurrency {
+  user_id: number;
+  balance: number;
+  total_earned: number;
+  total_spent: number;
+}
+
+export interface CurrencyTransaction {
+  id: number;
+  user_id: number;
+  amount: number;
+  type: 'earned' | 'spent' | 'bonus' | 'refund';
+  source: string;
+  description: string;
+  created_at: string;
+}
+
+export interface StoreItem {
+  id: number;
+  title: string;
+  description: string;
+  category: 'discount' | 'premium' | 'cosmetic' | 'physical';
+  price: number;
+  image_url?: string;
+  stock?: number;
+  partner?: string;
+  discount_code?: string;
+  available: boolean;
+}
+
+export interface Purchase {
+  id: number;
+  user_id: number;
+  item_id: number;
+  item_title: string;
+  price: number;
+  status: 'pending' | 'completed' | 'used';
+  purchased_at: string;
+  used_at?: string;
+  code?: string;
+}
+
+// Blog & News
+export interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  author_avatar?: string;
+  category: 'news' | 'events' | 'guide' | 'tips';
+  tags: string[];
+  image_url?: string;
+  published_at: string;
+  views_count: number;
+  likes_count: number;
+  is_liked?: boolean;
+  related_event_id?: number;
+}
+
+export interface BlogCategory {
+  id: string;
+  name: string;
+  icon: string;
+  count: number;
+}
+
+// Event Companions
+export interface EventCompanion {
+  id: number;
+  event_id: number;
+  user_id: number;
+  username: string;
+  avatar_url?: string;
+  message: string;
+  max_companions: number;
+  current_companions: number;
+  status: 'open' | 'full' | 'closed';
+  created_at: string;
+  interests?: string[];
+}
+
+export interface CompanionRequest {
+  id: number;
+  companion_post_id: number;
+  user_id: number;
+  username: string;
+  message: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  created_at: string;
+}
+
+export interface EventGroupMember {
+  user_id: number;
+  username: string;
+  avatar_url?: string;
+  joined_at: string;
+}
+
+export interface EventGroup {
+  id: number;
+  event_id: number;
+  name: string;
+  description: string;
+  creator_id: number;
+  members: EventGroupMember[];
+  max_members: number;
+  meeting_point?: string;
+  meeting_time?: string;
+  status: 'open' | 'full' | 'closed';
+}
+
