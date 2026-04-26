@@ -33,28 +33,75 @@
 - Node.js 18+
 - npm или yarn
 
-### Установка и запуск
-
-#### Windows (PowerShell)
-
-```powershell
-# Запустить всё одной командой
-.\start-services.ps1
-```
+### Автоматическая установка (рекомендуется)
 
 #### Linux / macOS / WSL
 
 ```bash
-# Backend
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python main.py
+# Клонировать репозиторий
+git clone https://github.com/laBobberto/test.git
+cd test
 
-# Frontend (в новом терминале)
+# Запустить скрипт установки
+chmod +x setup.sh
+./setup.sh
+```
+
+#### Windows (PowerShell)
+
+```powershell
+# Клонировать репозиторий
+git clone https://github.com/laBobberto/test.git
+cd test
+
+# Запустить скрипт установки
+.\setup.ps1
+```
+
+Скрипт автоматически:
+- Создаст `.env` файл из `.env.example`
+- Установит все зависимости
+- Инициализирует базу данных
+- Создаст демо-аккаунт с тестовыми данными
+
+### Ручная установка
+
+#### Backend
+
+```bash
+cd backend
+
+# Создать .env файл
+cp .env.example .env
+
+# Создать виртуальное окружение
+python3 -m venv venv
+source venv/bin/activate  # Linux/Mac
+# или
+venv\Scripts\activate     # Windows
+
+# Установить зависимости
+pip install -r requirements.txt
+
+# Инициализировать базу данных
+python init_db.py
+
+# Создать демо-аккаунт (опционально)
+python create_demo_account.py
+
+# Запустить сервер
+python main.py
+```
+
+#### Frontend
+
+```bash
 cd frontend
+
+# Установить зависимости
 npm install
+
+# Запустить dev сервер
 npm run dev
 ```
 
