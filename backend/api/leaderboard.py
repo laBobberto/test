@@ -29,27 +29,29 @@ async def get_global_leaderboard(
     """
     # Get leaderboard
     results = points_service.get_leaderboard(db, limit, period)
-    
+
     users = []
-    for rating, user in results:
+    for idx, (rating, user) in enumerate(results, start=1):
         users.append(UserRankResponse(
             user_id=user.id,
             username=user.username,
             total_points=rating.total_points,
-            rank=rating.rank,
+            rank=idx,
             weekly_points=rating.weekly_points,
             monthly_points=rating.monthly_points
         ))
-    
+
     # Get current user's rank
     my_rating = db.query(UserRating).filter(UserRating.user_id == current_user.id).first()
     my_rank = None
     if my_rating:
+        # Find user's position in the leaderboard
+        user_position = next((idx for idx, (r, u) in enumerate(results, start=1) if u.id == current_user.id), None)
         my_rank = UserRankResponse(
             user_id=current_user.id,
             username=current_user.username,
             total_points=my_rating.total_points,
-            rank=my_rating.rank,
+            rank=user_position if user_position else 0,
             weekly_points=my_rating.weekly_points,
             monthly_points=my_rating.monthly_points
         )

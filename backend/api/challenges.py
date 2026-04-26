@@ -26,10 +26,8 @@ async def get_challenges(
             "reward_points": 200,
             "start_date": (datetime.now() - timedelta(days=5)).isoformat(),
             "end_date": (datetime.now() + timedelta(days=10)).isoformat(),
-            "user_progress": {
-                "progress": 3,
-                "completed": False
-            }
+            "status": "active",
+            "progress": 3
         },
         {
             "id": 2,
@@ -40,10 +38,8 @@ async def get_challenges(
             "reward_points": 300,
             "start_date": (datetime.now() - timedelta(days=5)).isoformat(),
             "end_date": (datetime.now() + timedelta(days=10)).isoformat(),
-            "user_progress": {
-                "progress": 8,
-                "completed": False
-            }
+            "status": "active",
+            "progress": 8
         },
         {
             "id": 3,
@@ -54,11 +50,9 @@ async def get_challenges(
             "reward_points": 250,
             "start_date": (datetime.now() - timedelta(days=10)).isoformat(),
             "end_date": (datetime.now() - timedelta(days=1)).isoformat(),
-            "user_progress": {
-                "progress": 7,
-                "completed": True,
-                "completed_at": (datetime.now() - timedelta(days=1)).isoformat()
-            }
+            "status": "completed",
+            "progress": 7,
+            "completed_at": (datetime.now() - timedelta(days=1)).isoformat()
         },
         {
             "id": 4,
@@ -69,11 +63,9 @@ async def get_challenges(
             "reward_points": 400,
             "start_date": (datetime.now() - timedelta(days=30)).isoformat(),
             "end_date": (datetime.now() - timedelta(days=1)).isoformat(),
-            "user_progress": {
-                "progress": 5,
-                "completed": True,
-                "completed_at": (datetime.now() - timedelta(days=2)).isoformat()
-            }
+            "status": "completed",
+            "progress": 5,
+            "completed_at": (datetime.now() - timedelta(days=2)).isoformat()
         },
         {
             "id": 5,
@@ -84,7 +76,8 @@ async def get_challenges(
             "reward_points": 500,
             "start_date": None,
             "end_date": None,
-            "user_progress": None
+            "status": "available",
+            "progress": 0
         },
         {
             "id": 6,
@@ -95,7 +88,8 @@ async def get_challenges(
             "reward_points": 150,
             "start_date": None,
             "end_date": None,
-            "user_progress": None
+            "status": "available",
+            "progress": 0
         },
         {
             "id": 7,
@@ -106,11 +100,12 @@ async def get_challenges(
             "reward_points": 350,
             "start_date": None,
             "end_date": None,
-            "user_progress": None
+            "status": "available",
+            "progress": 0
         }
     ]
 
-    return {"challenges": challenges}
+    return challenges
 
 
 @router.post("/{challenge_id}/join")
@@ -122,7 +117,38 @@ async def join_challenge(
     """Join a challenge"""
     return {
         "message": "Successfully joined challenge",
-        "challenge_id": challenge_id
+        "challenge_id": challenge_id,
+        "status": "active"
+    }
+
+
+@router.post("/{challenge_id}/accept")
+async def accept_challenge(
+    challenge_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Accept/join a challenge"""
+    return {
+        "id": challenge_id,
+        "status": "active",
+        "progress": 0,
+        "message": "Challenge accepted"
+    }
+
+
+@router.post("/{challenge_id}/complete")
+async def complete_challenge(
+    challenge_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Mark challenge as completed"""
+    return {
+        "id": challenge_id,
+        "status": "completed",
+        "message": "Challenge completed",
+        "reward_points": 200
     }
 
 

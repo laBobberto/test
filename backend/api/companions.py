@@ -11,12 +11,13 @@ router = APIRouter(prefix="/api/companions", tags=["companions"])
 
 @router.get("/")
 async def get_companions(
+    category: str = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all companion posts"""
     # Mock data
-    companions = [
+    all_companions = [
         {
             "id": 1,
             "title": "Ищу попутчика на концерт",
@@ -93,7 +94,13 @@ async def get_companions(
         }
     ]
 
-    return {"companions": companions}
+    # Filter by category if provided
+    if category:
+        companions = [c for c in all_companions if c["category"] == category]
+    else:
+        companions = all_companions
+
+    return companions
 
 
 @router.post("/")

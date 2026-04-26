@@ -31,11 +31,21 @@ export const CompanionPostCard: React.FC<CompanionPostCardProps> = ({
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-            {post.username}
+            {post.title || post.username}
           </h3>
           <p style={{ color: 'var(--text-secondary)' }} className="text-sm mb-3">
-            {post.message}
+            {post.description || post.message}
           </p>
+          {post.location && (
+            <p style={{ color: 'var(--text-tertiary)' }} className="text-xs mb-2">
+              📍 {post.location}
+            </p>
+          )}
+          {post.datetime && (
+            <p style={{ color: 'var(--text-tertiary)' }} className="text-xs">
+              🕐 {new Date(post.datetime).toLocaleString('ru-RU')}
+            </p>
+          )}
         </div>
         <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
           isFull

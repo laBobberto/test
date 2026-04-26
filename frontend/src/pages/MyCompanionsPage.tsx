@@ -21,9 +21,8 @@ export default function MyCompanionsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      // In a real app, you would fetch companion posts and groups
-      // For now, we'll just set empty arrays
-      setCompanionPosts([]);
+      const companions = await companionsAPI.getAllCompanions();
+      setCompanionPosts(companions);
       setEventGroups([]);
     } catch (error) {
       console.error('Error loading companions data:', error);

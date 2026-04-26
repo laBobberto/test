@@ -25,8 +25,10 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
   onAccept,
   onComplete,
 }) => {
-  const progress = (challenge.current_progress / challenge.goal) * 100;
+  const progress = ((challenge.progress || 0) / challenge.target_count) * 100;
   const isCompleted = challenge.status === 'completed';
+  const isActive = challenge.status === 'active';
+  const isAvailable = challenge.status === 'available';
 
   return (
     <motion.div
@@ -40,11 +42,10 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-              {challenge.icon} {challenge.title}
+              {challenge.title}
             </h3>
-            <span className={`text-sm ${difficultyColors[challenge.difficulty]}`}>
-              {'★'.repeat(difficultyStars[challenge.difficulty])}
-            </span>
+            {isCompleted && <span className="text-green-400">✓</span>}
+            {isActive && <span className="text-yellow-400">⏱</span>}
           </div>
           <p style={{ color: 'var(--text-secondary)' }} className="text-sm mb-2">
             {challenge.description}
@@ -57,51 +58,62 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
       </div>
 
       {/* Progress Bar */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span style={{ color: 'var(--text-secondary)' }} className="text-sm">
-            Прогресс: {challenge.current_progress}/{challenge.goal}
-          </span>
-          <span style={{ color: 'var(--text-secondary)' }} className="text-sm">
-            {Math.round(progress)}%
-          </span>
+      {(isActive || isCompleted) && (
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span style={{ color: 'var(--text-secondary)' }} className="text-sm">
+              Прогресс: {challenge.progress || 0}/{challenge.target_count}
+            </span>
+            <span style={{ color: 'var(--text-secondary)' }} className="text-sm">
+              {Math.round(progress)}%
+            </span>
+          </div>
+          <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2 overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
         </div>
-        <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2 overflow-hidden">
-          <motion.div
-            className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.5 }}
-          />
-        </div>
-      </div>
+      )}
 
       {/* Timer for time-limited challenges */}
-      {challenge.type !== 'special' && (
+      {challenge.end_date && (
         <div style={{ color: 'var(--text-secondary)' }} className="text-xs mb-4">
-          До: {new Date(challenge.end_date).toLocaleDateString('ru-RU')}
+          {isCompleted ? 'Завершено: ' : 'До: '}
+          {new Date(challenge.end_date).toLocaleDateString('ru-RU')}
         </div>
       )}
 
       {/* Action Button */}
-      <motion.button
-        onClick={() => {
-          if (isCompleted && onComplete) {
-            onComplete(challenge.id);
-          } else if (!isCompleted && onAccept) {
-            onAccept(challenge.id);
-          }
-        }}
-        className={`w-full py-2 rounded-lg font-semibold transition-all ${
-          isCompleted
-            ? 'bg-green-500 text-white'
-            : 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-secondary)]'
-        }`}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        {isCompleted ? '✓ Завершено' : 'Принять'}
-      </motion.button>
+      {!isCompleted && (
+        <motion.button
+          onClick={() => {
+            if (isActive && onComplete) {
+              onComplete(challenge.id);
+            } else if (isAvailable && onAccept) {
+              onAccept(challenge.id);
+            }
+          }}
+          className={`w-full py-2 rounded-lg font-semibold transition-all ${
+            isActive
+              ? 'bg-green-500 text-white hover:bg-green-600'
+              : 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-secondary)]'
+          }`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {isActive ? 'Отметить прогресс' : 'Принять челленж'}
+        </motion.button>
+      )}
+
+      {isCompleted && (
+        <div className="w-full py-2 rounded-lg font-semibold bg-gray-600 text-white text-center">
+          ✓ Завершено
+        </div>
+      )}
     </motion.div>
   );
 };

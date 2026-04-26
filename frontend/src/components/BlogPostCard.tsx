@@ -49,21 +49,21 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onClick }) => 
 
       {/* Excerpt */}
       <p style={{ color: 'var(--text-secondary)' }} className="text-sm mb-3 line-clamp-2">
-        {post.excerpt}
+        {post.excerpt || post.summary}
       </p>
 
       {/* Meta */}
       <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-secondary)' }}>
         <div className="flex items-center gap-2">
-          <span>{post.author}</span>
+          <span>{typeof post.author === 'string' ? post.author : post.author?.username}</span>
           <span>•</span>
-          <span>{new Date(post.published_at).toLocaleDateString('ru-RU')}</span>
+          <span>{new Date(post.published_at || post.created_at).toLocaleDateString('ru-RU')}</span>
         </div>
       </div>
 
       {/* Stats */}
       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[var(--border-primary)] text-sm">
-        <span style={{ color: 'var(--text-secondary)' }}>👁️ {post.views_count}</span>
+        <span style={{ color: 'var(--text-secondary)' }}>👁️ {post.views_count || post.views || 0}</span>
         <motion.button
           onClick={(e) => {
             e.stopPropagation();
@@ -74,7 +74,7 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onClick }) => 
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >
-          ❤️ {post.likes_count}
+          ❤️ {post.likes_count || post.likes || 0}
         </motion.button>
       </div>
     </motion.div>

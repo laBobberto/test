@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import Navigation from '../components/Navigation';
 
 interface AnalyticsOverview {
   total_activities: number;
@@ -47,11 +48,11 @@ const AnalyticsPage: React.FC = () => {
     setLoading(true);
     try {
       const [overviewRes, weeklyRes, categoryRes, timeRes, streaksRes] = await Promise.all([
-        api.get('/analytics/overview'),
-        api.get('/analytics/activities/weekly'),
-        api.get('/analytics/categories/breakdown'),
-        api.get('/analytics/time/distribution'),
-        api.get('/analytics/streaks')
+        api.get('/api/analytics/overview'),
+        api.get('/api/analytics/activities/weekly'),
+        api.get('/api/analytics/categories/breakdown'),
+        api.get('/api/analytics/time/distribution'),
+        api.get('/api/analytics/streaks')
       ]);
 
       setOverview(overviewRes.data);
@@ -94,13 +95,15 @@ const AnalyticsPage: React.FC = () => {
   const maxTimeHours = Math.max(...timeDistribution.map(d => d.hours), 1);
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Analytics</h1>
-        <button
-          onClick={exportData}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
+    <div className="min-h-screen brutal-grid">
+      <Navigation />
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Analytics</h1>
+          <button
+            onClick={exportData}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
           Export Data
         </button>
       </div>
@@ -219,6 +222,7 @@ const AnalyticsPage: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

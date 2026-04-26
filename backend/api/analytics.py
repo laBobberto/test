@@ -151,26 +151,33 @@ def get_category_breakdown(
     db: Session = Depends(get_db)
 ):
     """Get activities breakdown by category"""
-    
-    # Activities by category
-    activities = db.query(
-        Activity.category,
-        func.count(Activity.id).label('total'),
-        func.sum(func.cast(Activity.completed, func.Integer)).label('completed')
-    ).filter(
+
+    # Get all activities by category
+    activities = db.query(Activity).filter(
         Activity.user_id == current_user.id
-    ).group_by(Activity.category).all()
-    
+    ).all()
+
+    # Group by category
+    category_stats = {}
+    for activity in activities:
+        cat = activity.category
+        if cat not in category_stats:
+            category_stats[cat] = {'total': 0, 'completed': 0}
+        category_stats[cat]['total'] += 1
+        if activity.completed:
+            category_stats[cat]['completed'] += 1
+
     result = []
-    for cat, total, completed in activities:
-        completed = completed or 0
+    for cat, stats in category_stats.items():
+        total = stats['total']
+        completed = stats['completed']
         result.append({
             "category": cat,
             "total": total,
             "completed": completed,
             "completion_rate": round(completed / total * 100, 1) if total > 0 else 0
         })
-    
+
     return {"categories": result}
 
 @router.get("/time/distribution")
@@ -204,7 +211,7 @@ def get_activity_streaks(
     db: Session = Depends(get_db)
 ):
     """Get activity streaks (consecutive days with completed activities)"""
-    
+
     # Get all completed activities ordered by date
     activities = db.query(
         func.date(Activity.start_time).label('date')
@@ -212,34 +219,41 @@ def get_activity_streaks(
         Activity.user_id == current_user.id,
         Activity.completed == True
     ).distinct().order_by(func.date(Activity.start_time).desc()).all()
-    
+
     if not activities:
         return {"current_streak": 0, "longest_streak": 0}
-    
-    dates = [a.date for a in activities]
-    
+
+    # Convert to date objects if they're strings
+    dates = []
+    for a in activities:
+        if isinstance(a.date, str):
+            dates.append(datetime.fromisoformat(a.date).date())
+        else:
+            dates.append(a.date)
+
     # Calculate current streak
     current_streak = 0
     today = datetime.utcnow().date()
-    
+
     for i, date in enumerate(dates):
         expected_date = today - timedelta(days=i)
         if date == expected_date:
             current_streak += 1
         else:
             break
-    
+
     # Calculate longest streak
     longest_streak = 1
     temp_streak = 1
-    
+
     for i in range(1, len(dates)):
-        if dates[i-1] - dates[i] == timedelta(days=1):
+        diff = (dates[i-1] - dates[i]).days
+        if diff == 1:
             temp_streak += 1
             longest_streak = max(longest_streak, temp_streak)
         else:
             temp_streak = 1
-    
+
     return {
         "current_streak": current_streak,
         "longest_streak": longest_streak

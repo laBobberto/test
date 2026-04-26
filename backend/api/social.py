@@ -145,6 +145,16 @@ def get_friend_requests(
     
     return result
 
+
+@router.get("/friends/pending", response_model=List[FriendshipResponse])
+def get_pending_friend_requests(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get pending friend requests (alias for /friends/requests)"""
+    return get_friend_requests(current_user, db)
+
+
 # ============= MESSAGES =============
 
 @router.post("/messages", response_model=MessageResponse)

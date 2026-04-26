@@ -289,37 +289,37 @@ export const groupsAPI = {
 // Friends API
 export const friendsAPI = {
   sendRequest: async (friendId: number) => {
-    const response = await api.post<Friend>('/api/friends/request', {
+    const response = await api.post<Friend>('/api/social/friends/request', {
       friend_id: friendId,
     });
     return response.data;
   },
 
   getFriends: async () => {
-    const response = await api.get<Friend[]>('/api/friends/');
+    const response = await api.get<Friend[]>('/api/social/friends');
     return response.data;
   },
 
   getPendingRequests: async () => {
-    const response = await api.get<Friend[]>('/api/friends/pending');
+    const response = await api.get<Friend[]>('/api/social/friends/pending');
     return response.data;
   },
 
   acceptRequest: async (requestId: number) => {
-    const response = await api.post(`/api/friends/${requestId}/accept`);
+    const response = await api.post(`/api/social/friends/accept/${requestId}`);
     return response.data;
   },
 
   rejectRequest: async (requestId: number) => {
-    await api.post(`/api/friends/${requestId}/reject`);
+    await api.delete(`/api/social/friends/${requestId}`);
   },
 
   removeFriend: async (friendId: number) => {
-    await api.delete(`/api/friends/${friendId}`);
+    await api.delete(`/api/social/friends/${friendId}`);
   },
 
   searchUsers: async (query: string) => {
-    const response = await api.get<User[]>('/api/friends/search', {
+    const response = await api.get<User[]>('/api/user/search', {
       params: { query },
     });
     return response.data;
@@ -329,20 +329,20 @@ export const friendsAPI = {
 // Leaderboard API
 export const leaderboardAPI = {
   getGlobal: async (limit: number = 50) => {
-    const response = await api.get<LeaderboardEntry[]>('/api/leaderboard/global', {
+    const response = await api.get<{ users: LeaderboardEntry[] }>('/api/leaderboard/global', {
       params: { limit },
     });
-    return response.data;
+    return response.data.users || [];
   },
 
   getFriends: async () => {
-    const response = await api.get<LeaderboardEntry[]>('/api/leaderboard/friends');
-    return response.data;
+    const response = await api.get<{ users: LeaderboardEntry[] }>('/api/leaderboard/friends');
+    return response.data.users || [];
   },
 
   getGroup: async (groupId: number) => {
-    const response = await api.get<LeaderboardEntry[]>(`/api/leaderboard/group/${groupId}`);
-    return response.data;
+    const response = await api.get<{ users: LeaderboardEntry[] }>(`/api/leaderboard/group/${groupId}`);
+    return response.data.users || [];
   },
 };
 
@@ -529,6 +529,13 @@ export const blogAPI = {
 
 // Event Companions API
 export const companionsAPI = {
+  getAllCompanions: async (category?: string) => {
+    const response = await api.get<EventCompanion[]>('/api/companions/', {
+      params: { category },
+    });
+    return response.data;
+  },
+
   getCompanionPosts: async (eventId: number) => {
     const response = await api.get<EventCompanion[]>(`/api/events/${eventId}/companions`);
     return response.data;

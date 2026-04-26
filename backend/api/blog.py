@@ -11,12 +11,16 @@ router = APIRouter(prefix="/api/blog", tags=["blog"])
 
 @router.get("/posts")
 async def get_blog_posts(
+    category: str = None,
+    tag: str = None,
+    limit: int = 50,
+    offset: int = 0,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all blog posts"""
     # Mock data
-    posts = [
+    all_posts = [
         {
             "id": 1,
             "title": "Как я нашёл баланс между учёбой и жизнью",
@@ -27,6 +31,7 @@ async def get_blog_posts(
                 "id": 2,
                 "username": "Анна Смирнова"
             },
+            "category": "lifestyle",
             "published": True,
             "views": 150,
             "likes": 23,
@@ -42,6 +47,7 @@ async def get_blog_posts(
                 "id": 3,
                 "username": "Дмитрий Иванов"
             },
+            "category": "education",
             "published": True,
             "views": 230,
             "likes": 45,
@@ -57,6 +63,7 @@ async def get_blog_posts(
                 "id": 1,
                 "username": "Демо Пользователь"
             },
+            "category": "career",
             "published": True,
             "views": 180,
             "likes": 34,
@@ -72,6 +79,7 @@ async def get_blog_posts(
                 "id": 4,
                 "username": "Елена Петрова"
             },
+            "category": "health",
             "published": True,
             "views": 195,
             "likes": 38,
@@ -79,7 +87,13 @@ async def get_blog_posts(
         }
     ]
 
-    return {"posts": posts}
+    # Filter by category if provided
+    if category:
+        posts = [post for post in all_posts if post.get("category") == category]
+    else:
+        posts = all_posts
+
+    return posts
 
 
 @router.get("/posts/{slug}")
@@ -117,3 +131,45 @@ async def like_post(
 ):
     """Like a blog post"""
     return {"message": "Post liked", "post_id": post_id}
+
+
+@router.get("/categories")
+async def get_categories(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get blog categories"""
+    categories = [
+        {"id": "lifestyle", "name": "Образ жизни", "icon": "🌟", "count": 1},
+        {"id": "education", "name": "Образование", "icon": "📚", "count": 1},
+        {"id": "career", "name": "Карьера", "icon": "💼", "count": 1},
+        {"id": "health", "name": "Здоровье", "icon": "💪", "count": 1}
+    ]
+    return categories
+
+
+@router.get("/search")
+async def search_posts(
+    q: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Search blog posts"""
+    # Mock search - in real app would search in title, summary, content
+    all_posts = [
+        {
+            "id": 1,
+            "title": "Как я нашёл баланс между учёбой и жизнью",
+            "slug": "balance-study-life",
+            "summary": "Делюсь своим опытом организации времени и приоритетов.",
+            "author": {"id": 2, "username": "Анна Смирнова"},
+            "category": "lifestyle",
+            "views": 150,
+            "likes": 23,
+            "created_at": "2026-04-20T10:00:00Z"
+        }
+    ]
+
+    # Simple search by title
+    results = [post for post in all_posts if q.lower() in post["title"].lower()]
+    return results

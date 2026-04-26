@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store';
 import { ToastProvider } from './components/Toast';
+import { useEffect } from 'react';
+import { userAPI } from './services/api';
 
 import AuthPage from './pages/AuthPage';
 import OnboardingPage from './pages/OnboardingPage';
@@ -35,6 +37,25 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const { token, setUser } = useAuthStore();
+
+  useEffect(() => {
+    const loadUser = async () => {
+      if (token) {
+        try {
+          const user = await userAPI.getProfile();
+          setUser(user);
+        } catch (error) {
+          console.error('Failed to load user:', error);
+          // Token might be invalid, clear it
+          useAuthStore.getState().logout();
+        }
+      }
+    };
+
+    loadUser();
+  }, [token, setUser]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider />

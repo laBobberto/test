@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { friendsAPI, chatAPI } from '../services/api';
 import type { Friend, User } from '../types';
 import ChatWindow from '../components/ChatWindow';
+import Navigation from '../components/Navigation';
 
 export default function FriendsPage() {
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -20,13 +21,20 @@ export default function FriendsPage() {
   }, []);
 
   const loadFriends = async () => {
+    console.log('loadFriends called');
     try {
       setLoading(true);
+      console.log('Fetching friends...');
       const data = await friendsAPI.getFriends();
-      setFriends(data.filter(f => f.status === 'accepted'));
+      console.log('Loaded friends data:', data);
+      const filtered = data.filter(f => f.status === 'accepted');
+      console.log('Filtered friends:', filtered);
+      setFriends(filtered);
     } catch (err: any) {
+      console.error('Error loading friends:', err);
       setError('Не удалось загрузить друзей');
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
@@ -108,8 +116,9 @@ export default function FriendsPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 brutal-grid">
-      <div className="max-w-6xl mx-auto py-8">
+    <div className="min-h-screen brutal-grid">
+      <Navigation />
+      <div className="max-w-6xl mx-auto py-8 px-4">
         <h1 className="text-4xl font-bold syne gradient-text mb-8">Друзья</h1>
 
         {error && (
@@ -155,7 +164,7 @@ export default function FriendsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {friends.map((friend) => (
               <div key={friend.id} className="card">
-                <h3 className="text-xl font-bold mb-2">{friend.username}</h3>
+                <h3 className="text-xl font-bold mb-2">{friend.friend_username || friend.username}</h3>
                 <p className="text-sm text-[var(--text-tertiary)] mb-4">
                   Друзья с {new Date(friend.created_at).toLocaleDateString()}
                 </p>
@@ -189,7 +198,7 @@ export default function FriendsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pendingRequests.map((request) => (
               <div key={request.id} className="card">
-                <h3 className="text-xl font-bold mb-2">{request.username}</h3>
+                <h3 className="text-xl font-bold mb-2">{request.friend_username || request.username}</h3>
                 <p className="text-sm text-[var(--text-tertiary)] mb-4">
                   Запрос от {new Date(request.created_at).toLocaleDateString()}
                 </p>

@@ -68,10 +68,13 @@ export default function LeaderboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center brutal-grid">
-        <div className="text-center">
-          <div className="text-5xl mb-4 syne font-bold gradient-text">Загрузка</div>
-          <div className="h-1 w-32 bg-[var(--accent-primary)] mx-auto animate-pulse rounded-full"></div>
+      <div className="min-h-screen brutal-grid">
+        <Navigation />
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="text-center">
+            <div className="text-5xl mb-4 syne font-bold gradient-text">Загрузка</div>
+            <div className="h-1 w-32 bg-[var(--accent-primary)] mx-auto animate-pulse rounded-full"></div>
+          </div>
         </div>
       </div>
     );

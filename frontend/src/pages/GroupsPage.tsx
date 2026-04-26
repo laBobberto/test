@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { groupsAPI, chatAPI } from '../services/api';
 import type { Group } from '../types';
 import ChatWindow from '../components/ChatWindow';
+import Navigation from '../components/Navigation';
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -83,8 +84,9 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 brutal-grid">
-      <div className="max-w-6xl mx-auto py-8">
+    <div className="min-h-screen brutal-grid">
+      <Navigation />
+      <div className="max-w-6xl mx-auto py-8 px-4">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold syne gradient-text">Группы</h1>
           <button
